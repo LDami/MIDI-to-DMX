@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30621.155
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DMX_MIDI", "DMX_MIDI\DMX_MIDI.csproj", "{EFB81F89-3263-458A-A5FE-B1F07206E5CB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EFB81F89-3263-458A-A5FE-B1F07206E5CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFB81F89-3263-458A-A5FE-B1F07206E5CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFB81F89-3263-458A-A5FE-B1F07206E5CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFB81F89-3263-458A-A5FE-B1F07206E5CB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BD761771-7E87-4311-8FFF-6D2271AE9635}
+	EndGlobalSection
+EndGlobal
