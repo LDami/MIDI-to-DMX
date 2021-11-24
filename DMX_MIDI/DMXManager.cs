@@ -17,13 +17,15 @@ namespace DMX_MIDI
 		private byte[] channels;
 		public List<DMXDevice> devices;
 		private bool isBlinkOn; // Indicates if the light is ON on flashing
+
+		private Thread HandshakeThread;
 		public void Init()
 		{
 			IsReady = false;
 			devices = new List<DMXDevice>();
-			Thread t = new Thread(ts =>
+			HandshakeThread = new Thread(ts =>
 			{
-				Console.WriteLine("DMXManager.cs - Init:I: DMXManager.Init thread started");
+				Console.WriteLine("DMXManager.cs - Init:I: HandshakeThread started");
 				int duration = 0;
 				sp = new SerialPort(Settings.GetSettings.dmxPort ?? "COM3", 250000, Parity.None, 8, StopBits.Two);
 				while(!sp.IsOpen && duration < Timeout)
@@ -48,13 +50,18 @@ namespace DMX_MIDI
 					channels = new byte[512];
 					ContinuousSend();
 				}
-				Console.WriteLine("DMXManager.cs - Init:I: DMXManager.Init thread finished");
+				Console.WriteLine("DMXManager.cs - Init:I: HandshakeThread finished");
 			});
-			t.Start();
+			HandshakeThread.Start();
 		}
 
 		public void Dispose()
 		{
+			if (HandshakeThread != null && HandshakeThread.IsAlive)
+			{
+				HandshakeThread.Abort();
+				Console.WriteLine("DMXManager.cs - Dispose:I: HandshakeThread finished");
+			}
 			Console.WriteLine("DMXManager.cs - Dispose:I: Serial port has been closed");
 			sp.Close();
 			sp.Dispose();

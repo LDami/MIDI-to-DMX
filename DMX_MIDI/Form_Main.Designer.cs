@@ -50,6 +50,8 @@
 			this.Slider_Blue_Value = new System.Windows.Forms.Label();
 			this.Line_Blue_Value = new System.Windows.Forms.Label();
 			this.Label_Blue_Value = new System.Windows.Forms.Label();
+			this.Label_BPM = new System.Windows.Forms.Label();
+			this.Label_BPMInfo = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.light2)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.light1)).BeginInit();
 			this.containerLight1.SuspendLayout();
@@ -306,12 +308,37 @@
 			this.Label_Blue_Value.TabIndex = 19;
 			this.Label_Blue_Value.Text = "Blue";
 			// 
+			// Label_BPM
+			// 
+			this.Label_BPM.AutoSize = true;
+			this.Label_BPM.Font = new System.Drawing.Font("Microsoft Sans Serif", 27.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.Label_BPM.ForeColor = System.Drawing.SystemColors.Control;
+			this.Label_BPM.Location = new System.Drawing.Point(26, 330);
+			this.Label_BPM.Name = "Label_BPM";
+			this.Label_BPM.Size = new System.Drawing.Size(182, 42);
+			this.Label_BPM.TabIndex = 22;
+			this.Label_BPM.Text = "BPM: 000";
+			this.Label_BPM.Click += new System.EventHandler(this.Label_BPM_Click);
+			// 
+			// Label_BPMInfo
+			// 
+			this.Label_BPMInfo.AutoSize = true;
+			this.Label_BPMInfo.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.Label_BPMInfo.ForeColor = System.Drawing.SystemColors.Control;
+			this.Label_BPMInfo.Location = new System.Drawing.Point(67, 533);
+			this.Label_BPMInfo.Name = "Label_BPMInfo";
+			this.Label_BPMInfo.Size = new System.Drawing.Size(28, 16);
+			this.Label_BPMInfo.TabIndex = 23;
+			this.Label_BPMInfo.Text = "Info";
+			// 
 			// Form_Main
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.MidnightBlue;
 			this.ClientSize = new System.Drawing.Size(1128, 558);
+			this.Controls.Add(this.Label_BPMInfo);
+			this.Controls.Add(this.Label_BPM);
 			this.Controls.Add(this.Slider_Blue_Value);
 			this.Controls.Add(this.Line_Blue_Value);
 			this.Controls.Add(this.Label_Blue_Value);
@@ -369,6 +396,8 @@
 		private System.Windows.Forms.Label Slider_Blue_Value;
 		private System.Windows.Forms.Label Line_Blue_Value;
 		private System.Windows.Forms.Label Label_Blue_Value;
+		private System.Windows.Forms.Label Label_BPM;
+		private System.Windows.Forms.Label Label_BPMInfo;
 	}
 }
 

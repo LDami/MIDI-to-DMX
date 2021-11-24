@@ -58,6 +58,9 @@ namespace DMX_MIDI
 		private DMXManager dmxManager = new DMXManager();
 		private GUISpot[] spots;
 
+		private BPMManager bpmManager = new BPMManager();
+		private SpectrumBeatDetector beatDetector = new(76, 48000, SensivityLevel.HIGH, SensivityLevel.HIGH);
+
 		private void Form_Main_Load(object sender, EventArgs e)
 		{
 			dmxManager.Init();
@@ -71,6 +74,12 @@ namespace DMX_MIDI
 				Console.WriteLine("Fin du thread checkStatus");
 			});
 			checkStatus.Start();
+
+			bpmManager.Init();
+			//bpmManager.Beat += BpmManager_Beat;
+			beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
+			beatDetector.StartAnalysis();
+			Label_BPMInfo.Text = beatDetector.DeviceName;
 
 			timeline = new Timeline(TL_Line.Location, TL_Line.Size.Width);
 			TL_Current.Location = timeline.CurrentLocation;
@@ -107,9 +116,29 @@ namespace DMX_MIDI
 			getLightColors.Start();
 		}
 
+		public void UpdateBPMInfo(string txt)
+		{
+			Label_BPMInfo.Text = txt;
+		}
+
+		private void BpmManager_Beat(byte value)
+		{
+			//Console.WriteLine("beat: " + value);
+			Random rdm = new();
+			Label_BPM.ForeColor = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+			List<DMXDevice> devices = dmxManager.devices;
+			devices.ForEach(device =>
+			{
+				//spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+			});
+		}
+
 		private void Form_Main_FormClosing(object sender, FormClosingEventArgs e)
 		{
+			beatDetector.StopAnalysis();
+			beatDetector.Free();
 			dmxManager.Dispose();
+			bpmManager.Dispose();
 		}
 
 		private void Btn_Settings_Click(object sender, EventArgs e)
@@ -292,6 +321,12 @@ namespace DMX_MIDI
 				BlueSliderIsMoving = true;
 				BlueSliderLastLocation = e.Location;
 			}
+		}
+
+		private void Label_BPM_Click(object sender, EventArgs e)
+		{
+			bpmManager.Tap();
+			Label_BPM.Text = "BPM: " + bpmManager.BPM;
 		}
 
 		private void Slider_Blue_Value_MouseMove(object sender, MouseEventArgs e)
