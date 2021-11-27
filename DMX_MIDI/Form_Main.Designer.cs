@@ -52,6 +52,7 @@
 			this.Label_Blue_Value = new System.Windows.Forms.Label();
 			this.Label_BPM = new System.Windows.Forms.Label();
 			this.Label_BPMInfo = new System.Windows.Forms.Label();
+			this.Button_Auto = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.light2)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.light1)).BeginInit();
 			this.containerLight1.SuspendLayout();
@@ -103,6 +104,7 @@
 			this.Label_SerialStatus.Size = new System.Drawing.Size(41, 16);
 			this.Label_SerialStatus.TabIndex = 5;
 			this.Label_SerialStatus.Text = "Serial";
+			this.Label_SerialStatus.Click += new System.EventHandler(this.Label_SerialStatus_Click);
 			// 
 			// light2
 			// 
@@ -331,12 +333,23 @@
 			this.Label_BPMInfo.TabIndex = 23;
 			this.Label_BPMInfo.Text = "Info";
 			// 
+			// Button_Auto
+			// 
+			this.Button_Auto.Location = new System.Drawing.Point(114, 403);
+			this.Button_Auto.Name = "Button_Auto";
+			this.Button_Auto.Size = new System.Drawing.Size(75, 23);
+			this.Button_Auto.TabIndex = 24;
+			this.Button_Auto.Text = "Auto/Man";
+			this.Button_Auto.UseVisualStyleBackColor = true;
+			this.Button_Auto.Click += new System.EventHandler(this.Button_Auto_Click);
+			// 
 			// Form_Main
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.MidnightBlue;
 			this.ClientSize = new System.Drawing.Size(1128, 558);
+			this.Controls.Add(this.Button_Auto);
 			this.Controls.Add(this.Label_BPMInfo);
 			this.Controls.Add(this.Label_BPM);
 			this.Controls.Add(this.Slider_Blue_Value);
@@ -398,6 +411,7 @@
 		private System.Windows.Forms.Label Label_Blue_Value;
 		private System.Windows.Forms.Label Label_BPM;
 		private System.Windows.Forms.Label Label_BPMInfo;
+		private System.Windows.Forms.Button Button_Auto;
 	}
 }
 

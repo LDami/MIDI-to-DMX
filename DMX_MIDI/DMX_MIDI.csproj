@@ -186,7 +186,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BeatDetector.cs" />
-    <Compile Include="BPMManager.cs" />
     <Compile Include="DMXDevice.cs" />
     <Compile Include="DMXManager.cs" />
     <Compile Include="Form_Main.cs">

@@ -73,9 +73,10 @@ namespace DMX_MIDI
         {
             bool result = false;
 
-
-            // Initialize BASS on default device
-            result = Bass.Init(0, _SamplingRate, DeviceInitFlags.NoSpeakerAssignment, IntPtr.Zero);
+            
+            // Initialize BASS
+            result = Bass.Init(0, _SamplingRate, DeviceInitFlags.Stereo);
+            
             /*
             for(int i=0; i < 10; i++)
             {
@@ -84,17 +85,20 @@ namespace DMX_MIDI
                 Console.WriteLine(Bass.GetDeviceInfo(i).IsEnabled);
                 Console.WriteLine(Bass.GetDeviceInfo(i).IsDefault);
                 Console.WriteLine(Bass.GetDeviceInfo(i).Name);
-            }*/
+            }
+            */
+            
             if (!result)
             {
                 throw new BassException(Bass.LastError);
             }
-
+            
             // Initialize WASAPI
-            result = BassWasapi.Init(_DeviceCode, 48000, 2, WasapiInitFlags.Buffer, 0.1f, 0.005f, _WasapiProcess, IntPtr.Zero);
+            result = BassWasapi.Init(_DeviceCode, 48000, 2, WasapiInitFlags.Buffer, 0, 0.010f, _WasapiProcess);
             Console.WriteLine("chan: " + BassWasapi.GetDeviceInfo(_DeviceCode).MixChannels);
             Console.WriteLine("freq: " + BassWasapi.GetDeviceInfo(_DeviceCode).MixFrequency);
             Console.WriteLine("mute: " + BassWasapi.GetMute(WasapiVolumeTypes.Device));
+            
             /*
             for(int i=0; i < 100; i++)
             {
@@ -340,7 +344,7 @@ namespace DMX_MIDI
                 }
             }
 
-            if (result > 0)
+            if (result > 0 && volumelevel > 1500f)
             {
                 OnDetected(result);
             }

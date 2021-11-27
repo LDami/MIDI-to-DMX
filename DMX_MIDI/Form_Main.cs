@@ -51,6 +51,8 @@ namespace DMX_MIDI
 		private Point TL_Current_LastLocation;
 		private Timeline timeline;
 
+		private bool isAutoModeActive;
+
 		private GUISpot selectedDevice;
 
 		private Slider red, green, blue;
@@ -58,8 +60,8 @@ namespace DMX_MIDI
 		private DMXManager dmxManager = new DMXManager();
 		private GUISpot[] spots;
 
-		private BPMManager bpmManager = new BPMManager();
-		private SpectrumBeatDetector beatDetector = new(76, 48000, SensivityLevel.HIGH, SensivityLevel.HIGH);
+		//private SpectrumBeatDetector beatDetector = new(76, 48000, SensivityLevel.VERY_LOW, SensivityLevel.VERY_LOW);
+		private SpectrumBeatDetector beatDetector;
 
 		private void Form_Main_Load(object sender, EventArgs e)
 		{
@@ -75,11 +77,15 @@ namespace DMX_MIDI
 			});
 			checkStatus.Start();
 
-			bpmManager.Init();
-			//bpmManager.Beat += BpmManager_Beat;
-			beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
-			beatDetector.StartAnalysis();
-			Label_BPMInfo.Text = beatDetector.DeviceName;
+			isAutoModeActive = false;
+
+			if(isAutoModeActive)
+			{
+				beatDetector = new(86, 48000, SensivityLevel.NORMAL, SensivityLevel.NORMAL);
+				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
+				beatDetector.StartAnalysis();
+			}
+			//Label_BPMInfo.Text = beatDetector.DeviceName;
 
 			timeline = new Timeline(TL_Line.Location, TL_Line.Size.Width);
 			TL_Current.Location = timeline.CurrentLocation;
@@ -129,16 +135,15 @@ namespace DMX_MIDI
 			List<DMXDevice> devices = dmxManager.devices;
 			devices.ForEach(device =>
 			{
-				//spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+				spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
 			});
 		}
 
 		private void Form_Main_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			beatDetector.StopAnalysis();
-			beatDetector.Free();
+			//beatDetector.StopAnalysis();
+			//beatDetector.Free();
 			dmxManager.Dispose();
-			bpmManager.Dispose();
 		}
 
 		private void Btn_Settings_Click(object sender, EventArgs e)
@@ -188,6 +193,19 @@ namespace DMX_MIDI
 			blue.CurrentValue = device.spot.ColorValue.B;
 		}
 
+		private void Label_BPM_Click(object sender, EventArgs e)
+		{
+			/*
+			bpmManager.Tap();
+			Label_BPM.Text = "BPM: " + bpmManager.BPM;
+			*/
+		}
+
+		private void Label_SerialStatus_Click(object sender, EventArgs e)
+		{
+			dmxManager.Init();
+		}
+
 		private void Btn_Play_Click(object sender, EventArgs e)
 		{
 
@@ -209,6 +227,30 @@ namespace DMX_MIDI
 			{
 				spot.spot.IsFlashing = false;
 			});
+		}
+
+		private void Button_Auto_Click(object sender, EventArgs e)
+		{
+			isAutoModeActive = !isAutoModeActive;
+			if (isAutoModeActive)
+			{
+				beatDetector = new(86, 48000, SensivityLevel.NORMAL, SensivityLevel.NORMAL);
+				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
+				beatDetector.StartAnalysis();
+				Label_BPMInfo.Text = "Auto: Active";
+			}
+			else
+			{
+				if(beatDetector != null)
+				{
+					beatDetector.StopAnalysis();
+					beatDetector.UnSubscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
+					beatDetector.Free();
+					beatDetector = null;
+				}
+				Label_BPMInfo.Text = "Auto: Inactive";
+				dmxManager.Reconnect();
+			}
 		}
 
 		private void TL_Current_MouseDown(object sender, MouseEventArgs e)
@@ -321,12 +363,6 @@ namespace DMX_MIDI
 				BlueSliderIsMoving = true;
 				BlueSliderLastLocation = e.Location;
 			}
-		}
-
-		private void Label_BPM_Click(object sender, EventArgs e)
-		{
-			bpmManager.Tap();
-			Label_BPM.Text = "BPM: " + bpmManager.BPM;
 		}
 
 		private void Slider_Blue_Value_MouseMove(object sender, MouseEventArgs e)
