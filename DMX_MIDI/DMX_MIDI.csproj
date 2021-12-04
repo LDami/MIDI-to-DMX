@@ -194,6 +194,12 @@
     <Compile Include="Form_Main.Designer.cs">
       <DependentUpon>Form_Main.cs</DependentUpon>
     </Compile>
+    <Compile Include="LightTriggerControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="LightTriggerControl.Designer.cs">
+      <DependentUpon>LightTriggerControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Form_Settings.cs">
@@ -208,6 +214,9 @@
     <Compile Include="Timeline.cs" />
     <EmbeddedResource Include="Form_Main.resx">
       <DependentUpon>Form_Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LightTriggerControl.resx">
+      <DependentUpon>LightTriggerControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

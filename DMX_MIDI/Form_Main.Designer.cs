@@ -53,6 +53,7 @@
 			this.Label_BPM = new System.Windows.Forms.Label();
 			this.Label_BPMInfo = new System.Windows.Forms.Label();
 			this.Button_Auto = new System.Windows.Forms.Button();
+			this.lightTriggers = new System.Windows.Forms.TableLayoutPanel();
 			((System.ComponentModel.ISupportInitialize)(this.light2)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.light1)).BeginInit();
 			this.containerLight1.SuspendLayout();
@@ -343,12 +344,24 @@
 			this.Button_Auto.UseVisualStyleBackColor = true;
 			this.Button_Auto.Click += new System.EventHandler(this.Button_Auto_Click);
 			// 
+			// lightTriggers
+			// 
+			this.lightTriggers.ColumnCount = 1;
+			this.lightTriggers.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+			this.lightTriggers.Location = new System.Drawing.Point(274, 330);
+			this.lightTriggers.Name = "lightTriggers";
+			this.lightTriggers.RowCount = 1;
+			this.lightTriggers.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.lightTriggers.Size = new System.Drawing.Size(808, 125);
+			this.lightTriggers.TabIndex = 26;
+			// 
 			// Form_Main
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.MidnightBlue;
 			this.ClientSize = new System.Drawing.Size(1128, 558);
+			this.Controls.Add(this.lightTriggers);
 			this.Controls.Add(this.Button_Auto);
 			this.Controls.Add(this.Label_BPMInfo);
 			this.Controls.Add(this.Label_BPM);
@@ -412,6 +425,7 @@
 		private System.Windows.Forms.Label Label_BPM;
 		private System.Windows.Forms.Label Label_BPMInfo;
 		private System.Windows.Forms.Button Button_Auto;
+		private System.Windows.Forms.TableLayoutPanel lightTriggers;
 	}
 }
 

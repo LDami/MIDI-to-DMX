@@ -63,6 +63,12 @@ namespace DMX_MIDI
 		//private SpectrumBeatDetector beatDetector = new(76, 48000, SensivityLevel.VERY_LOW, SensivityLevel.VERY_LOW);
 		private SpectrumBeatDetector beatDetector;
 
+		private const int MaxLTElements = 5;
+		private LightTriggerControl[] ltControls;
+		private Button ltPrevButton;
+		private Button ltNextButton;
+		private int ltIndex;
+
 		private void Form_Main_Load(object sender, EventArgs e)
 		{
 			dmxManager.Init();
@@ -120,6 +126,86 @@ namespace DMX_MIDI
 				}
 			});
 			getLightColors.Start();
+			lightTriggers.ColumnCount = 7;
+
+			/* Building light trigger controllers */
+
+			ltPrevButton = new Button();
+			ltPrevButton.Size = new Size(50, lightTriggers.Size.Height);
+			ltPrevButton.Text = "<";
+			ltPrevButton.Click += LTPrevButton_Click;
+			ltNextButton = new Button();
+			ltNextButton.Text = ">";
+			ltNextButton.Size = new Size(50, lightTriggers.Size.Height);
+			ltNextButton.Click += LTNextButton_Click;
+
+			ltIndex = 0;
+
+			ltControls = new LightTriggerControl[20];
+			lightTriggers.Controls.Add(ltPrevButton);
+			for (int i = 0; i < ltControls.Length; i++)
+			{
+				ltControls[i] = new LightTriggerControl();
+				ltControls[i].LTName = $"#{i}";
+				ltControls[i].Click += LightTriggerControl_Click;
+			}
+			for (int i = 0; i < MaxLTElements; i++)
+			{
+				lightTriggers.Controls.Add(ltControls[i]);
+			}
+			lightTriggers.Controls.Add(ltNextButton);
+			lightTriggers.MouseWheel += LightTriggers_MouseWheel;
+		}
+
+		private void LightTriggerControl_Click(object sender, EventArgs e)
+		{
+			for (int i = 0; i < ltControls.Length; i++)
+				ltControls[i].Unselect();
+
+			((LightTriggerControl)sender).Select();
+		}
+
+		private void LightTriggers_MouseWheel(object sender, MouseEventArgs e)
+		{
+			if(e.Delta > 0 && ltIndex > 0)
+				ltIndex--;
+			else if(e.Delta < 0 && ltIndex < ltControls.Length)
+				ltIndex++;
+
+			UpdateLightTriggerControl();
+		}
+
+		private void LTPrevButton_Click(object sender, EventArgs e)
+		{
+			if(ltIndex > 0)
+			{
+				ltIndex--;
+
+				UpdateLightTriggerControl();
+			}
+		}
+
+		private void LTNextButton_Click(object sender, EventArgs e)
+		{
+			if (ltIndex < ltControls.Length)
+			{
+				ltIndex++;
+
+				UpdateLightTriggerControl();
+			}
+		}
+
+		public void UpdateLightTriggerControl()
+		{
+			lightTriggers.Controls.Clear();
+			lightTriggers.Controls.Add(ltPrevButton);
+			for (int i = ltIndex; i < (MaxLTElements + ltIndex); i++)
+			{
+				if (i >= ltControls.Length)
+					break;
+				lightTriggers.Controls.Add(ltControls[i]);
+			}
+			lightTriggers.Controls.Add(ltNextButton);
 		}
 
 		public void UpdateBPMInfo(string txt)
