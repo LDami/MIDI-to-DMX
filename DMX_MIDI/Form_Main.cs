@@ -61,7 +61,7 @@ namespace DMX_MIDI
 		private GUISpot[] spots;
 
 		//private SpectrumBeatDetector beatDetector = new(76, 48000, SensivityLevel.VERY_LOW, SensivityLevel.VERY_LOW);
-		private SpectrumBeatDetector beatDetector;
+		private BeatDetectorInitOnly beatDetector;
 
 		private const int MaxLTElements = 5;
 		private LightTriggerControl[] ltControls;
@@ -87,9 +87,7 @@ namespace DMX_MIDI
 
 			if(isAutoModeActive)
 			{
-				beatDetector = new(86, 48000, SensivityLevel.NORMAL, SensivityLevel.NORMAL);
-				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
-				beatDetector.StartAnalysis();
+				beatDetector = new(48000);
 			}
 			//Label_BPMInfo.Text = beatDetector.DeviceName;
 
@@ -320,22 +318,18 @@ namespace DMX_MIDI
 			isAutoModeActive = !isAutoModeActive;
 			if (isAutoModeActive)
 			{
-				beatDetector = new(86, 48000, SensivityLevel.NORMAL, SensivityLevel.NORMAL);
-				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
-				beatDetector.StartAnalysis();
+				beatDetector = new(48000);
 				Label_BPMInfo.Text = "Auto: Active";
 			}
 			else
 			{
 				if(beatDetector != null)
 				{
-					beatDetector.StopAnalysis();
-					beatDetector.UnSubscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
 					beatDetector.Free();
 					beatDetector = null;
 				}
 				Label_BPMInfo.Text = "Auto: Inactive";
-				dmxManager.Reconnect();
+				//dmxManager.Reconnect();
 			}
 		}
 

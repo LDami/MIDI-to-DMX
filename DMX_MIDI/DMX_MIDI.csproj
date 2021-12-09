@@ -185,6 +185,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BeatDetectorInitOnly.cs" />
     <Compile Include="BeatDetector.cs" />
     <Compile Include="DMXDevice.cs" />
     <Compile Include="DMXManager.cs" />
