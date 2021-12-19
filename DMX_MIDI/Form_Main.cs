@@ -94,7 +94,7 @@ namespace DMX_MIDI
 
 			if(isAutoModeActive)
 			{
-				beatDetector = new(85, 48000, SensivityLevel.VERY_LOW, SensivityLevel.VERY_LOW);
+				beatDetector = new(85, 48000);
 				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
 				beatDetector.StartAnalysis();
 				dmxManager.ResetTimeout();
@@ -330,7 +330,7 @@ namespace DMX_MIDI
 			isAutoModeActive = !isAutoModeActive;
 			if (isAutoModeActive)
 			{
-				beatDetector = new(85, 48000, SensivityLevel.NORMAL, SensivityLevel.NORMAL);
+				beatDetector = new(85, 48000);
 				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
 				beatDetector.StartAnalysis();
 				Label_BPMInfo.Text = "Auto: Active";

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 /*
  * 
  * Created from https://codereview.stackexchange.com/questions/78589/beat-detection-algorithm-implementation
+ * With help from https://www.parallelcube.com/web/wp-content/uploads/2018/03/BeatDetectionAlgorithms.pdf
  * 
  * */
 
@@ -47,28 +48,20 @@ namespace DMX_MIDI
         // Analysis settings
         private int _SamplingRate;
         private int _DeviceCode;
-        private SensivityLevel _BASSSensivity;
-        private SensivityLevel _MIDSSensivity;
 
         // Analysis data
         private float[] _FFTData = new float[4096];
         private double[] _History = new double[HISTORY];
-        private double _Variance;
-        private double historyEnergyAverage = 0;
-
-        private Form_Visualizer visualizer = new Form_Visualizer();
+        private double _Variance; // Used to help detection with sound variance
 
         #endregion
 
         #region Setup methods
 
-        public SpectrumBeatDetector(int DeviceCode, int SamplingRate = 44100, SensivityLevel BASSSensivity = SensivityLevel.NORMAL, SensivityLevel MIDSSensivity = SensivityLevel.NORMAL)
+        public SpectrumBeatDetector(int DeviceCode, int SamplingRate = 44100)
         {
             _SamplingRate = SamplingRate;
-            _BASSSensivity = BASSSensivity;
-            _MIDSSensivity = MIDSSensivity;
             _DeviceCode = DeviceCode;
-            visualizer.Show();
             Init();
         }
 
@@ -111,17 +104,6 @@ namespace DMX_MIDI
             Free();
         }
 
-        // Sensivity Setters
-        public void SetBassSensivity(SensivityLevel Sensivity)
-        {
-            _BASSSensivity = Sensivity;
-        }
-
-        public void SetMidsSensivity(SensivityLevel Sensivity)
-        {
-            _MIDSSensivity = Sensivity;
-        }
-
         #endregion
 
         #region BASS-dedicated Methods
@@ -135,8 +117,6 @@ namespace DMX_MIDI
         // Cleans after BASS
         public void Free()
         {
-            if(!visualizer.IsDisposed)
-                visualizer.Dispose();
             BassWasapi.Free();
             Bass.Free();
         }
@@ -213,56 +193,67 @@ namespace DMX_MIDI
             int ret = BassWasapi.GetData(_FFTData, (int)DataFlags.FFT1024 | (int)DataFlags.FFTComplex); //get channel fft data
             if (ret < -1) return;
 
-            // Calculate the energy of every result and divide it into subbands
-            float sum = 0;
+            // Calculate the energy of every result
+            float actualEnergy = 0;
 
             for (int i = 2; i < 2048; i = i + 2)
             {
                 float real = _FFTData[i];
                 float complex = _FFTData[i + 1];
-                sum += (float)Math.Sqrt((double)(real * real + complex * complex));
+                actualEnergy += (float)Math.Sqrt((double)(real * real + complex * complex));
             }
 
-            visualizer.UpdateProgressBarBass(Form_Visualizer.ProgressBarLevel.Low, (int)(sum*10));
+            double historyAverage = CalculateAverage(_History);
 
-            CalculateAverages();
+            // Calculate the average level of all history and calculate the variance
+            CalculateVariance(_History, historyAverage);
 
             // Shift the history register and save new values
             ShiftHistory(1);
 
-            _History[0] = sum;
-
+            _History[0] = actualEnergy;
 
             // Detect beat basing on FFT results
-            DetectBeat(sum, level);
+            DetectBeat(historyAverage, actualEnergy, level);
         }
 
-        // Calculate the average value of every band
-        private void CalculateAverages()
+        /// <summary>
+        /// Calculate the average of all history energies
+        /// </summary>
+        /// <param name="history">Array of all history energies</param>
+        /// <returns>The average of squared energies</returns>
+        private double CalculateAverage(double[] history)
         {
-            // Calculate variance of energies
-            // https://www.parallelcube.com/web/wp-content/uploads/2018/03/BeatDetectionAlgorithms.pdf
-
-            _Variance = 0;
             double sumOfHistoryEnergies = 0;
             for (int i = 0; i < HISTORY; i++)
             {
-                sumOfHistoryEnergies += Math.Pow(_History[i], 2);
+                sumOfHistoryEnergies += Math.Pow(history[i], 2);
             }
-            historyEnergyAverage = sumOfHistoryEnergies / HISTORY;
+            return sumOfHistoryEnergies / HISTORY;
+        }
 
+        /// <summary>
+        /// Calculate the variance between history energies
+        /// </summary>
+        /// <param name="history">Array of all history energies</param>
+        /// <param name="historyAverage">Average of history energies</param>
+        private void CalculateVariance(double[] history, double historyAverage)
+        {
             double sumOfDiffHistoryLvlAndAverage = 0;
             for (int i = 0; i < HISTORY; i++)
             {
-                sumOfDiffHistoryLvlAndAverage += Math.Pow(_History[i] - historyEnergyAverage, 2);
+                sumOfDiffHistoryLvlAndAverage += Math.Pow(history[i] - historyAverage, 2);
             }
-
             _Variance = sumOfDiffHistoryLvlAndAverage / HISTORY;
         }
 
-        // Detects beat basing on analysis result
-        // Beat detection is marked on the first three bits of the returned value
-        private byte DetectBeat(double energy, int volume)
+        /// <summary>
+        /// Detects beat basing on analysis result
+        /// </summary>
+        /// <param name="energy">Energy of the actual sample</param>
+        /// <param name="volume">Actual volume level detected by BassWasapi</param>
+        /// <returns></returns>
+        private byte DetectBeat(double historyAverage, double energy, int volume)
         {
             byte result = 0;
             double volumelevel = (double)volume / 32768 * 100;   // Volume level in %
@@ -270,11 +261,9 @@ namespace DMX_MIDI
 
             double C = (-0.0025714 * _Variance) + 1.5142857;
             C = C * 1.15;
-            visualizer.UpdateActualAverageLabel(energy);
-            visualizer.UpdateHistoryAverageLabel(historyEnergyAverage);
 
             // Compare energies with C*average
-            if (Math.Pow(energy, 2) > (C * historyEnergyAverage) && energy > 0.5)   // Second rule is for noise reduction
+            if (Math.Pow(energy, 2) > (C * historyAverage) && energy > 0.5)   // Second rule is for noise reduction
             {
                 result = 1;
             }
