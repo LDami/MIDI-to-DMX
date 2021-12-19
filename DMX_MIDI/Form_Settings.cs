@@ -41,13 +41,13 @@ namespace DMX_MIDI
 		{
 			// Chargement des appareils MIDI
 			MoxScript midiScript = new MoxScript();
-			Console.WriteLine("Number of MIDI devices detected: " + midiScript.SysMidiInCount);
+			Logger.AddLog("Number of MIDI devices detected: " + midiScript.SysMidiInCount);
 			string deviceName = midiScript.GetFirstSysMidiInDev();
-			Console.WriteLine("First device detected: " + deviceName);
+			Logger.AddLog("First device detected: " + deviceName);
 			List_MIDIIn.Items.Clear();
 			while (deviceName != "")
 			{
-				Console.WriteLine("New device detected: " + deviceName);
+				Logger.AddLog("New device detected: " + deviceName);
 				List_MIDIIn.Items.Add(deviceName);
 				deviceName = midiScript.GetNextSysMidiInDev();
 			}
@@ -57,7 +57,7 @@ namespace DMX_MIDI
 			List_Serial.Items.Clear();
 			foreach (string port in ports)
 			{
-				Console.WriteLine("New Serial Port detected: " + port);
+				Logger.AddLog("New Serial Port detected: " + port);
 				List_Serial.Items.Add(port);
 			}
 		}

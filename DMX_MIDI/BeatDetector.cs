@@ -29,8 +29,7 @@ namespace DMX_MIDI
         #region Fields
 
         // Constants
-        private const int BANDS = 10;
-        private const int HISTORY = 50;
+        private const int HISTORY = 43;
 
         // Events
         public delegate void BeatDetectedHandler(byte Value);
@@ -53,7 +52,11 @@ namespace DMX_MIDI
 
         // Analysis data
         private float[] _FFTData = new float[4096];
-        private double[,] _History = new double[BANDS, HISTORY];
+        private double[] _History = new double[HISTORY];
+        private double _Variance;
+        private double historyEnergyAverage = 0;
+
+        private Form_Visualizer visualizer = new Form_Visualizer();
 
         #endregion
 
@@ -65,6 +68,7 @@ namespace DMX_MIDI
             _BASSSensivity = BASSSensivity;
             _MIDSSensivity = MIDSSensivity;
             _DeviceCode = DeviceCode;
+            visualizer.Show();
             Init();
         }
 
@@ -73,45 +77,19 @@ namespace DMX_MIDI
         {
             bool result = false;
 
-            
             // Initialize BASS
             result = Bass.Init(0, _SamplingRate, DeviceInitFlags.Stereo);
-            
-            /*
-            for(int i=0; i < 10; i++)
-            {
-                Console.WriteLine(i);
-                Console.WriteLine(Bass.GetDeviceInfo(i).Driver);
-                Console.WriteLine(Bass.GetDeviceInfo(i).IsEnabled);
-                Console.WriteLine(Bass.GetDeviceInfo(i).IsDefault);
-                Console.WriteLine(Bass.GetDeviceInfo(i).Name);
-            }
-            */
-            
+
             if (!result)
             {
                 throw new BassException(Bass.LastError);
             }
-            
+
             // Initialize WASAPI
-            result = BassWasapi.Init(_DeviceCode, 48000, 2, WasapiInitFlags.Buffer, 0, 0.010f, _WasapiProcess);
-            Console.WriteLine("chan: " + BassWasapi.GetDeviceInfo(_DeviceCode).MixChannels);
-            Console.WriteLine("freq: " + BassWasapi.GetDeviceInfo(_DeviceCode).MixFrequency);
-            Console.WriteLine("mute: " + BassWasapi.GetMute(WasapiVolumeTypes.Device));
+            //result = BassWasapi.Init(_DeviceCode, 48000, 2, WasapiInitFlags.Buffer, 0, 0.010f, _WasapiProcess);
+            result = BassWasapi.Init(_DeviceCode, 0, 0, WasapiInitFlags.Buffer, 1f, 0.05f, _WasapiProcess);
             
-            /*
-            for(int i=0; i < 100; i++)
-            {
-                Console.WriteLine(i);
-                if (BassWasapi.GetDeviceInfo(i).IsEnabled)
-                {
-                    Console.WriteLine(BassWasapi.GetDeviceInfo(i).Type);
-                    Console.WriteLine(BassWasapi.GetDeviceInfo(i).MixChannels);
-                    Console.WriteLine(BassWasapi.GetDeviceInfo(i).IsDefault);
-                    Console.WriteLine(BassWasapi.GetDeviceInfo(i).Name);
-                }
-            }
-            */
+            
             if (!result)
             {
                 throw new BassException(Bass.LastError);
@@ -157,6 +135,8 @@ namespace DMX_MIDI
         // Cleans after BASS
         public void Free()
         {
+            if(!visualizer.IsDisposed)
+                visualizer.Dispose();
             BassWasapi.Free();
             Bass.Free();
         }
@@ -179,12 +159,8 @@ namespace DMX_MIDI
             {
                 while (true)
                 {
-                    //Stopwatch SW = new Stopwatch();
-                    //SW.Start();
                     Thread.Sleep(5);
                     PerformAnalysis();
-                    //SW.Stop();
-                    //Console.WriteLine(SW.Elapsed);
                 }
             });
 
@@ -222,23 +198,15 @@ namespace DMX_MIDI
         // Shifts history n places to the right
         private void ShiftHistory(int n)
         {
-            for (int i = 0; i < BANDS; i++)
+            for (int j = HISTORY - 1 - n; j >= 0; j--)
             {
-                for (int j = HISTORY - 1 - n; j >= 0; j--)
-                {
-                    _History[i, j + n] = _History[i, j];
-                }
+                _History[j + n] = _History[j];
             }
         }
 
         // Performs FFT analysis in order to detect beat
         private void PerformAnalysis()
         {
-            // Specifes on which result end which band (dividing it into 10 bands)
-            // 19 - bass, 187 - mids, rest is highs
-            int[] BandRange = { 4, 8, 18, 38, 48, 94, 140, 186, 466, 1022, 22000 };
-            double[] BandsTemp = new double[BANDS];
-            int n = 0;
             int level = BassWasapi.GetLevel();
 
             // Get FFT
@@ -253,95 +221,62 @@ namespace DMX_MIDI
                 float real = _FFTData[i];
                 float complex = _FFTData[i + 1];
                 sum += (float)Math.Sqrt((double)(real * real + complex * complex));
-
-                if (i == BandRange[n])
-                {
-                    BandsTemp[n++] = (BANDS * sum) / 1024;
-                    sum = 0;
-                }
             }
 
-            // Detect beat basing on FFT results
-            DetectBeat(BandsTemp, level);
+            visualizer.UpdateProgressBarBass(Form_Visualizer.ProgressBarLevel.Low, (int)(sum*10));
+
+            CalculateAverages();
 
             // Shift the history register and save new values
             ShiftHistory(1);
 
-            for (int i = 0; i < BANDS; i++)
-            {
-                _History[i, 0] = BandsTemp[i];
-            }
+            _History[0] = sum;
+
+
+            // Detect beat basing on FFT results
+            DetectBeat(sum, level);
         }
 
         // Calculate the average value of every band
-        private double[] CalculateAverages()
+        private void CalculateAverages()
         {
-            double[] avg = new double[BANDS];
+            // Calculate variance of energies
+            // https://www.parallelcube.com/web/wp-content/uploads/2018/03/BeatDetectionAlgorithms.pdf
 
-            for (int i = 0; i < BANDS; i++)
+            _Variance = 0;
+            double sumOfHistoryEnergies = 0;
+            for (int i = 0; i < HISTORY; i++)
             {
-                double sum = 0;
+                sumOfHistoryEnergies += Math.Pow(_History[i], 2);
+            }
+            historyEnergyAverage = sumOfHistoryEnergies / HISTORY;
 
-                for (int j = 0; j < HISTORY; j++)
-                {
-                    sum += _History[i, j];
-                }
-
-                avg[i] = (sum / HISTORY);
+            double sumOfDiffHistoryLvlAndAverage = 0;
+            for (int i = 0; i < HISTORY; i++)
+            {
+                sumOfDiffHistoryLvlAndAverage += Math.Pow(_History[i] - historyEnergyAverage, 2);
             }
 
-            return avg;
+            _Variance = sumOfDiffHistoryLvlAndAverage / HISTORY;
         }
 
         // Detects beat basing on analysis result
         // Beat detection is marked on the first three bits of the returned value
-        private byte DetectBeat(double[] Energies, int volume)
+        private byte DetectBeat(double energy, int volume)
         {
-            // Sound height ranges (1, 2 is bass, next 6 is mids)
-            int Bass = 3;
-            int Mids = 6;
-
-            double[] avg = CalculateAverages();
             byte result = 0;
             double volumelevel = (double)volume / 32768 * 100;   // Volume level in %
-            //Console.WriteLine("volume: " + volumelevel);
+            //Logger.AddLog("volume: " + volumelevel);
 
-            for (int i = 0; i < BANDS && result == 0; i++)
+            double C = (-0.0025714 * _Variance) + 1.5142857;
+            C = C * 1.15;
+            visualizer.UpdateActualAverageLabel(energy);
+            visualizer.UpdateHistoryAverageLabel(historyEnergyAverage);
+
+            // Compare energies with C*average
+            if (Math.Pow(energy, 2) > (C * historyEnergyAverage) && energy > 0.5)   // Second rule is for noise reduction
             {
-                // Set the C parameter
-                double C = 0;
-
-                if (i < Bass)
-                {
-                    C = 2.3 * ((double)_BASSSensivity / 100);
-                }
-                else if (i < Mids)
-                {
-                    C = 2.89 * ((double)_MIDSSensivity / 100);
-                }
-                else
-                {
-                    C = 3 * ((double)_MIDSSensivity / 100);
-                }
-
-                // Compare energies in all bands with C*average
-                if (Energies[i] > (C * avg[i]) && volumelevel > 1)   // Second rule is for noise reduction
-                {
-                    byte res = 0;
-                    if (i < Bass)
-                    {
-                        res = 1;
-                    }
-                    else if (i < Mids)
-                    {
-                        res = 2;
-                    }
-                    else
-                    {
-                        res = 4;
-                    }
-                    result = (byte)(result | res);
-                }
+                result = 1;
             }
 
             if (result > 0 && volumelevel > 1500f)

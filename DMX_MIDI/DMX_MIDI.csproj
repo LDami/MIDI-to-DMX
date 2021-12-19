@@ -188,6 +188,12 @@
     <Compile Include="BeatDetector.cs" />
     <Compile Include="DMXDevice.cs" />
     <Compile Include="DMXManager.cs" />
+    <Compile Include="Form_LightTriggerControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_LightTriggerControl.Designer.cs">
+      <DependentUpon>Form_LightTriggerControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form_Main.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -200,6 +206,7 @@
     <Compile Include="LightTriggerControl.Designer.cs">
       <DependentUpon>LightTriggerControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Form_Settings.cs">
@@ -208,10 +215,20 @@
     <Compile Include="Form_Settings.Designer.cs">
       <DependentUpon>Form_Settings.cs</DependentUpon>
     </Compile>
+    <Compile Include="SerialPortExtensions.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Spot.cs" />
     <Compile Include="Slider.cs" />
     <Compile Include="Timeline.cs" />
+    <Compile Include="Visualizer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Visualizer.Designer.cs">
+      <DependentUpon>Visualizer.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Form_LightTriggerControl.resx">
+      <DependentUpon>Form_LightTriggerControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form_Main.resx">
       <DependentUpon>Form_Main.cs</DependentUpon>
     </EmbeddedResource>
@@ -230,6 +247,9 @@
     </Compile>
     <EmbeddedResource Include="Form_Settings.resx">
       <DependentUpon>Form_Settings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Visualizer.resx">
+      <DependentUpon>Visualizer.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

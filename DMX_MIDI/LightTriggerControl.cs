@@ -15,6 +15,8 @@ namespace DMX_MIDI
 		Fixed,
 		BeatDetection
 	}
+
+	// TODO Créer enum pour différents effets de lumière sur beat: flash, bounce, changement de couleur fixe (random ou custom)
 	public partial class LightTriggerControl : UserControl
 	{
 		private readonly Color defaultColor = Color.Aquamarine;
@@ -36,10 +38,19 @@ namespace DMX_MIDI
 		public void Select()
 		{
 			this.BackColor = selectedColor;
+			Btn_Edit.BackColor = selectedColor;
 		}
 		public void Unselect()
 		{
 			this.BackColor = defaultColor;
+			Btn_Edit.BackColor = defaultColor;
+		}
+
+		private void Btn_Edit_Click(object sender, EventArgs e)
+		{
+			Form_LightTriggerControl ltForm = new();
+			ltForm.Show();
+			ltForm.LTControl = this;
 		}
 	}
 }

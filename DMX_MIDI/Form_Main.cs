@@ -71,25 +71,33 @@ namespace DMX_MIDI
 
 		private void Form_Main_Load(object sender, EventArgs e)
 		{
+			Logger.Init();
 			dmxManager.Init();
 			Thread checkStatus = new Thread(t =>
 			{
 				while(!this.IsDisposed)
 				{
 					Label_SerialStatus.ForeColor = dmxManager.IsReady ? Color.Green : Color.Red;
+					if(Label_BPMInfo.InvokeRequired)
+					{
+						Label_BPMInfo.BeginInvoke((MethodInvoker) delegate() { Label_BPMInfo.Text = dmxManager.averageSpeed + "/s";  });
+					}
+					else
+						Label_BPMInfo.Text = dmxManager.averageSpeed + "/s";
 					Thread.Sleep(50);
 				}
-				Console.WriteLine("Fin du thread checkStatus");
+				Logger.AddLog("Fin du thread checkStatus");
 			});
 			checkStatus.Start();
-
-			isAutoModeActive = false;
+			
+			isAutoModeActive = true;
 
 			if(isAutoModeActive)
 			{
-				beatDetector = new(86, 48000, SensivityLevel.NORMAL, SensivityLevel.NORMAL);
+				beatDetector = new(85, 48000, SensivityLevel.VERY_LOW, SensivityLevel.VERY_LOW);
 				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
 				beatDetector.StartAnalysis();
+				dmxManager.ResetTimeout();
 			}
 			//Label_BPMInfo.Text = beatDetector.DeviceName;
 
@@ -112,7 +120,7 @@ namespace DMX_MIDI
 			);
 			dmxManager.devices.Add(spots[0].spot);
 			dmxManager.devices.Add(spots[1].spot);
-
+			
 			Thread getLightColors = new Thread(t =>
 			{
 				while (!this.IsDisposed)
@@ -147,7 +155,6 @@ namespace DMX_MIDI
 			{
 				ltControls[i] = new LightTriggerControl();
 				ltControls[i].LTName = $"#{i}";
-				ltControls[i].Click += LightTriggerControl_Click;
 			}
 			for (int i = 0; i < MaxLTElements; i++)
 			{
@@ -215,20 +222,23 @@ namespace DMX_MIDI
 
 		private void BpmManager_Beat(byte value)
 		{
-			//Console.WriteLine("beat: " + value);
+			//Logger.AddLog("beat: " + value);
 			Random rdm = new();
 			Label_BPM.ForeColor = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+			
 			List<DMXDevice> devices = dmxManager.devices;
 			devices.ForEach(device =>
 			{
-				spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+				//spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+				spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.Flash();
 			});
+			
 		}
 
 		private void Form_Main_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			//beatDetector.StopAnalysis();
-			//beatDetector.Free();
+			beatDetector.StopAnalysis();
+			beatDetector.Free();
 			dmxManager.Dispose();
 		}
 
@@ -320,7 +330,7 @@ namespace DMX_MIDI
 			isAutoModeActive = !isAutoModeActive;
 			if (isAutoModeActive)
 			{
-				beatDetector = new(86, 48000, SensivityLevel.NORMAL, SensivityLevel.NORMAL);
+				beatDetector = new(85, 48000, SensivityLevel.NORMAL, SensivityLevel.NORMAL);
 				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
 				beatDetector.StartAnalysis();
 				Label_BPMInfo.Text = "Auto: Active";
@@ -335,8 +345,9 @@ namespace DMX_MIDI
 					beatDetector = null;
 				}
 				Label_BPMInfo.Text = "Auto: Inactive";
-				dmxManager.Reconnect();
+				//dmxManager.Reconnect();
 			}
+			//dmxManager.ResetTimeout();
 		}
 
 		private void TL_Current_MouseDown(object sender, MouseEventArgs e)

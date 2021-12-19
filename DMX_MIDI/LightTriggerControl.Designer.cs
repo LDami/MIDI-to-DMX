@@ -31,6 +31,7 @@ namespace DMX_MIDI
 		{
 			this.Label_Name = new System.Windows.Forms.Label();
 			this.Label_Type = new System.Windows.Forms.Label();
+			this.Btn_Edit = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// Label_Name
@@ -52,10 +53,26 @@ namespace DMX_MIDI
 			this.Label_Type.TabIndex = 1;
 			this.Label_Type.Text = "type";
 			// 
+			// Btn_Edit
+			// 
+			this.Btn_Edit.BackColor = System.Drawing.Color.Transparent;
+			this.Btn_Edit.Cursor = System.Windows.Forms.Cursors.Hand;
+			this.Btn_Edit.FlatAppearance.BorderSize = 0;
+			this.Btn_Edit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.Btn_Edit.Location = new System.Drawing.Point(84, 62);
+			this.Btn_Edit.Name = "Btn_Edit";
+			this.Btn_Edit.Size = new System.Drawing.Size(35, 19);
+			this.Btn_Edit.TabIndex = 2;
+			this.Btn_Edit.Text = "Edit";
+			this.Btn_Edit.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+			this.Btn_Edit.UseVisualStyleBackColor = false;
+			this.Btn_Edit.Click += new System.EventHandler(this.Btn_Edit_Click);
+			// 
 			// LightTriggerControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.Btn_Edit);
 			this.Controls.Add(this.Label_Type);
 			this.Controls.Add(this.Label_Name);
 			this.Name = "LightTriggerControl";
@@ -69,5 +86,6 @@ namespace DMX_MIDI
 
 		private System.Windows.Forms.Label Label_Name;
 		private System.Windows.Forms.Label Label_Type;
+		private System.Windows.Forms.Button Btn_Edit;
 	}
 }

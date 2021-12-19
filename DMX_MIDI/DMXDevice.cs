@@ -13,6 +13,7 @@ namespace DMX_MIDI
 		public int StartChannel { get; set; }
 		public int[] ColorChannels { get; set; }
 		public Color ColorValue { get; set; }
+		public float GlobalIntensity { get; set; }
 		public bool IsFlashing { get; set; }
 	}
 }
