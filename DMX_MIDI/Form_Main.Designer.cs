@@ -54,6 +54,7 @@
 			this.Label_BPMInfo = new System.Windows.Forms.Label();
 			this.Button_Auto = new System.Windows.Forms.Button();
 			this.lightTriggers = new System.Windows.Forms.TableLayoutPanel();
+			this.Label_MidiDevice = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.light2)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.light1)).BeginInit();
 			this.containerLight1.SuspendLayout();
@@ -102,9 +103,9 @@
 			this.Label_SerialStatus.ForeColor = System.Drawing.SystemColors.Control;
 			this.Label_SerialStatus.Location = new System.Drawing.Point(12, 533);
 			this.Label_SerialStatus.Name = "Label_SerialStatus";
-			this.Label_SerialStatus.Size = new System.Drawing.Size(41, 16);
+			this.Label_SerialStatus.Size = new System.Drawing.Size(79, 16);
 			this.Label_SerialStatus.TabIndex = 5;
-			this.Label_SerialStatus.Text = "Serial";
+			this.Label_SerialStatus.Text = "Serial: None";
 			this.Label_SerialStatus.Click += new System.EventHandler(this.Label_SerialStatus_Click);
 			// 
 			// light2
@@ -328,7 +329,7 @@
 			this.Label_BPMInfo.AutoSize = true;
 			this.Label_BPMInfo.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.Label_BPMInfo.ForeColor = System.Drawing.SystemColors.Control;
-			this.Label_BPMInfo.Location = new System.Drawing.Point(67, 533);
+			this.Label_BPMInfo.Location = new System.Drawing.Point(835, 533);
 			this.Label_BPMInfo.Name = "Label_BPMInfo";
 			this.Label_BPMInfo.Size = new System.Drawing.Size(28, 16);
 			this.Label_BPMInfo.TabIndex = 23;
@@ -355,12 +356,24 @@
 			this.lightTriggers.Size = new System.Drawing.Size(808, 125);
 			this.lightTriggers.TabIndex = 26;
 			// 
+			// Label_MidiDevice
+			// 
+			this.Label_MidiDevice.AutoSize = true;
+			this.Label_MidiDevice.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.Label_MidiDevice.ForeColor = System.Drawing.SystemColors.Control;
+			this.Label_MidiDevice.Location = new System.Drawing.Point(101, 533);
+			this.Label_MidiDevice.Name = "Label_MidiDevice";
+			this.Label_MidiDevice.Size = new System.Drawing.Size(72, 16);
+			this.Label_MidiDevice.TabIndex = 27;
+			this.Label_MidiDevice.Text = "MIDI: None";
+			// 
 			// Form_Main
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.MidnightBlue;
 			this.ClientSize = new System.Drawing.Size(1128, 558);
+			this.Controls.Add(this.Label_MidiDevice);
 			this.Controls.Add(this.lightTriggers);
 			this.Controls.Add(this.Button_Auto);
 			this.Controls.Add(this.Label_BPMInfo);
@@ -426,6 +439,7 @@
 		private System.Windows.Forms.Label Label_BPMInfo;
 		private System.Windows.Forms.Button Button_Auto;
 		private System.Windows.Forms.TableLayoutPanel lightTriggers;
+		private System.Windows.Forms.Label Label_MidiDevice;
 	}
 }
 

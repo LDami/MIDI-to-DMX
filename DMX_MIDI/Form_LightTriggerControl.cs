@@ -18,10 +18,13 @@ namespace DMX_MIDI
 		}
 
 		private LightTriggerControl ltControl;
-		public LightTriggerControl LTControl { get { return ltControl; } set {
+		public LightTriggerControl LTControl {
+			get { return ltControl; }
+			set {
 				ltControl = value;
 				Label_Title.Text = value.LTName;
-			} }
+			}
+		}
 
 
 		private void Btn_Close_Click(object sender, EventArgs e)

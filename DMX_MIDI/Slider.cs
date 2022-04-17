@@ -56,9 +56,6 @@ namespace DMX_MIDI
 		private Color GetColor { get; set; }
 		Label SliderElement { get; set; }
 		Label LineElement { get; set; }
-
-		private Point StartPoint { get; set; }
-		private int LineWidth { get; set; }
 		public Slider(Color color, Label slider, Label line)
 		{
 			this.GetColor = color;
@@ -70,10 +67,10 @@ namespace DMX_MIDI
 
 		public Point ConstrainLocation(Point desiredLocation)
 		{
-			if (desiredLocation.X < this.StartPoint.X)
-				desiredLocation.X = this.StartPoint.X;
-			if (desiredLocation.X > (this.StartPoint.X + this.LineWidth))
-				desiredLocation.X = (this.StartPoint.X + this.LineWidth);
+			if (desiredLocation.X < this.LineElement.Location.X)
+				desiredLocation.X = this.LineElement.Location.X;
+			if (desiredLocation.X > (this.LineElement.Location.X + this.LineElement.Width - this.SliderElement.Width))
+				desiredLocation.X = (this.LineElement.Location.X + this.LineElement.Width - this.SliderElement.Width);
 			return desiredLocation;
 		}
 	}

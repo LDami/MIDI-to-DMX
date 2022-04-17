@@ -54,6 +54,8 @@ namespace DMX_MIDI
         private double[] _History = new double[HISTORY];
         private double _Variance; // Used to help detection with sound variance
 
+        LevelToExcel excelLogger;
+
         #endregion
 
         #region Setup methods
@@ -79,15 +81,29 @@ namespace DMX_MIDI
             }
 
             // Initialize WASAPI
+
+            for (int i = 0; i < 100; i++)
+            {
+                Console.WriteLine(i);
+                if (BassWasapi.GetDeviceInfo(i).IsEnabled)
+                {
+                    Console.WriteLine(BassWasapi.GetDeviceInfo(i).Type);
+                    Console.WriteLine(BassWasapi.GetDeviceInfo(i).MixChannels);
+                    Console.WriteLine(BassWasapi.GetDeviceInfo(i).IsDefault);
+                    Console.WriteLine(BassWasapi.GetDeviceInfo(i).Name);
+                    if (BassWasapi.GetDeviceInfo(i).Name.Equals("Mixage stéréo (Realtek(R) Audio)"))
+                        _DeviceCode = i;
+                }
+            }
+
             //result = BassWasapi.Init(_DeviceCode, 48000, 2, WasapiInitFlags.Buffer, 0, 0.010f, _WasapiProcess);
             result = BassWasapi.Init(_DeviceCode, 0, 0, WasapiInitFlags.Buffer, 1f, 0.05f, _WasapiProcess);
-            
             
             if (!result)
             {
                 throw new BassException(Bass.LastError);
             }
-
+            
             BassWasapi.Start();
             Thread.Sleep(500);
         }
@@ -124,6 +140,7 @@ namespace DMX_MIDI
         #endregion
 
         #region Analysis public methods
+        private bool stopRequested;
 
         // Starts a new Analysis Thread
         public void StartAnalysis()
@@ -134,14 +151,18 @@ namespace DMX_MIDI
                 _AnalysisThread.Abort();
             }
 
+            stopRequested = false;
+
+            //excelLogger = new LevelToExcel();
             // Starts a new high-priority thread
             _AnalysisThread = new Thread(delegate ()
             {
-                while (true)
+                while (!stopRequested)
                 {
                     Thread.Sleep(5);
                     PerformAnalysis();
                 }
+                //excelLogger.SaveAndClose();
             });
 
             _AnalysisThread.Priority = ThreadPriority.Highest;
@@ -153,7 +174,8 @@ namespace DMX_MIDI
         {
             if (_AnalysisThread != null && _AnalysisThread.IsAlive)
             {
-                _AnalysisThread.Abort();
+                //_AnalysisThread.Abort();
+                stopRequested = true;
             }
         }
 
@@ -233,6 +255,15 @@ namespace DMX_MIDI
         }
 
         /// <summary>
+        /// Returns the average of last history samples
+        /// </summary>
+        /// <returns></returns>
+        public double GetAverage()
+		{
+            return CalculateAverage(_History);
+		}
+
+        /// <summary>
         /// Calculate the variance between history energies
         /// </summary>
         /// <param name="history">Array of all history energies</param>
@@ -257,7 +288,7 @@ namespace DMX_MIDI
         {
             byte result = 0;
             double volumelevel = (double)volume / 32768 * 100;   // Volume level in %
-            //Logger.AddLog("volume: " + volumelevel);
+            //excelLogger.AddRow(DateTime.Now.ToString("HH/mm/ss ffff"), energy.ToString());
 
             double C = (-0.0025714 * _Variance) + 1.5142857;
             C = C * 1.15;

@@ -29,7 +29,7 @@ namespace DMX_MIDI
 			{
 				Logger.AddLog("DMXManager.cs - Init:I: HandshakeThread started");
 				int duration = 0;
-				sp = new SerialPort(Settings.GetSettings.dmxPort ?? "COM3", 250000, Parity.None, 8, StopBits.Two);
+				sp = new SerialPort(Settings.Get(Settings.SettingsList.dmxPort) ?? "COM3", 250000, Parity.None, 8, StopBits.Two);
 				while (!sp.IsOpen && duration < Timeout)
 				{
 					try
@@ -111,6 +111,8 @@ namespace DMX_MIDI
 						{
 							byte r, g, b;
 							r = (byte)(device.ColorValue.R * (device.GlobalIntensity / 255));
+							//Console.WriteLine($"ColorValue.R = {device.ColorValue.R}");
+							//Console.WriteLine($"GlobalIntensity = {device.GlobalIntensity}");
 							g = (byte)(device.ColorValue.G * (device.GlobalIntensity / 255));
 							b = (byte)(device.ColorValue.B * (device.GlobalIntensity / 255));
 							if (device.IsFlashing)
@@ -133,6 +135,10 @@ namespace DMX_MIDI
 
 						sp.Write(zero, 0, zero.Length);
 						sp.BaudRate = 250000;
+						/*
+						for (int i = 0; i < 12; i++)
+							Console.WriteLine($"channels[{i}] = {channels[i]}");
+						*/
 						sp.Write(channels, 0, channels.Length);
 						sp.DiscardOutBuffer();
 						Thread.Sleep(9);

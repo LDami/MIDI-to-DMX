@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MIDIOXLib;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -60,6 +61,17 @@ namespace DMX_MIDI
 		private DMXManager dmxManager = new DMXManager();
 		private GUISpot[] spots;
 
+		private OnBeatEvent beatEvent = OnBeatEvent.Flash;
+
+
+		private MoxScript midiScript;
+		private string midiDeviceName;
+		public string MidiDeviceName { get { return midiDeviceName; } set { midiDeviceName = value; Label_MidiDevice.Text = "MIDI: " + value; } }
+
+		private string serialPortName;
+		public string SerialPortName { get { return serialPortName; } set { serialPortName = value; Label_SerialStatus.Text = "Serial: " + value; } }
+
+
 		//private SpectrumBeatDetector beatDetector = new(76, 48000, SensivityLevel.VERY_LOW, SensivityLevel.VERY_LOW);
 		private SpectrumBeatDetector beatDetector;
 
@@ -72,34 +84,34 @@ namespace DMX_MIDI
 		private void Form_Main_Load(object sender, EventArgs e)
 		{
 			Logger.Init();
+			Settings.Init();
+			Settings.Updated += Settings_Updated;
 			dmxManager.Init();
+
+			MidiDeviceName = Settings.Get(Settings.SettingsList.midiPort) ?? "None";
+			SerialPortName = Settings.Get(Settings.SettingsList.dmxPort) ?? "None";
+
 			Thread checkStatus = new Thread(t =>
 			{
 				while(!this.IsDisposed)
 				{
 					Label_SerialStatus.ForeColor = dmxManager.IsReady ? Color.Green : Color.Red;
-					if(Label_BPMInfo.InvokeRequired)
-					{
-						Label_BPMInfo.BeginInvoke((MethodInvoker) delegate() { Label_BPMInfo.Text = dmxManager.averageSpeed + "/s";  });
-					}
-					else
-						Label_BPMInfo.Text = dmxManager.averageSpeed + "/s";
 					Thread.Sleep(50);
 				}
 				Logger.AddLog("Fin du thread checkStatus");
 			});
 			checkStatus.Start();
 			
-			isAutoModeActive = true;
+			isAutoModeActive = false;
 
 			if(isAutoModeActive)
 			{
-				beatDetector = new(85, 48000);
+				beatDetector = new(84, 48000);
 				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
 				beatDetector.StartAnalysis();
 				dmxManager.ResetTimeout();
+				Label_BPMInfo.Text = beatDetector.DeviceName;
 			}
-			//Label_BPMInfo.Text = beatDetector.DeviceName;
 
 			timeline = new Timeline(TL_Line.Location, TL_Line.Size.Width);
 			TL_Current.Location = timeline.CurrentLocation;
@@ -162,6 +174,124 @@ namespace DMX_MIDI
 			}
 			lightTriggers.Controls.Add(ltNextButton);
 			lightTriggers.MouseWheel += LightTriggers_MouseWheel;
+
+			midiScript = new MoxScript();
+			midiScript.ShutdownAtEnd = 1;
+			midiScript.FireMidiInput = 1;
+			midiScript.MidiInput += MidiScript_MidiInput;
+		}
+
+		private void MidiScript_MidiInput(int nTimestamp, int port, int status, int data1, int data2)
+		{
+			Logger.AddLog($"Form_Main.cs - MidiScript_MidiInput:I: MIDI IN = {nTimestamp} - {port} - {status} - {data1} - {data2}");
+			//if(status == 0xB0) // CC
+			//{
+				switch(data1)
+				{
+					case 0x02:
+						if(beatEvent == OnBeatEvent.None)
+							spots.ToList().ForEach(s => s.spot.GlobalIntensity = data2*2);
+						break;
+				}
+			//}
+			//else if(status == 0x90) // Note On
+			//{
+				switch (data1)
+				{
+					case 0x14:
+						if (data2 == 0)
+						{
+							spots.ToList().ForEach(spot =>
+							{
+								spot.spot.IsFlashing = false;
+							});
+						}
+						else
+						{
+							spots.ToList().ForEach(spot =>
+							{
+								spot.spot.IsFlashing = true;
+							});
+						}
+						break;
+					case 0x15:
+						{
+							beatEvent = OnBeatEvent.Flash;
+							spots.ToList().ForEach(spot =>
+							{
+								spot.spot.IsBlackedout = false;
+							});
+						}
+						break;
+					case 0x24:
+						{
+							beatEvent = OnBeatEvent.Blackout;
+						}
+						break;
+					case 0x26:
+						{
+							beatEvent = OnBeatEvent.RandomColor;
+							spots.ToList().ForEach(spot =>
+							{
+								spot.spot.IsBlackedout = false;
+							});
+						}
+						break;
+					case 0x29:
+						{
+							beatEvent = OnBeatEvent.None;
+							spots.ToList().ForEach(spot =>
+							{
+								spot.spot.IsBlackedout = false;
+							});
+						}
+						break;
+					case 0x2d:
+						{
+							spots.ToList().ForEach(spot =>
+							{
+								spot.spot.ColorValue = Color.FromArgb(255, 255, 255);
+							});
+						}
+						break;
+					case 0x2f:
+						{
+							spots.ToList().ForEach(spot =>
+							{
+								spot.spot.ColorValue = Color.FromArgb(255, 0, 0);
+							});
+						}
+						break;
+					case 0x31:
+						{
+							spots.ToList().ForEach(spot =>
+							{
+								spot.spot.ColorValue = Color.FromArgb(0, 255, 0);
+							});
+						}
+						break;
+					case 0x33:
+						{
+							spots.ToList().ForEach(spot =>
+							{
+								spot.spot.ColorValue = Color.FromArgb(0, 0, 255);
+							});
+						}
+						break;
+				}
+			//}
+		}
+
+		private void Settings_Updated(Settings.SettingsUpdatedEventArgs e)
+		{
+			if(e.key == Settings.SettingsList.midiPort && e.newValue.GetType() == typeof(string))
+			{
+				MidiDeviceName = e.newValue.ToString();
+			}
+			else if (e.key == Settings.SettingsList.dmxPort && e.newValue.GetType() == typeof(string))
+			{
+				SerialPortName = e.newValue.ToString();
+			}
 		}
 
 		private void LightTriggerControl_Click(object sender, EventArgs e)
@@ -225,26 +355,50 @@ namespace DMX_MIDI
 			//Logger.AddLog("beat: " + value);
 			Random rdm = new();
 			Label_BPM.ForeColor = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
-			
+
 			List<DMXDevice> devices = dmxManager.devices;
+			Spot spot;
 			devices.ForEach(device =>
 			{
-				//spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
-				spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.Flash();
+				spot = spots.First<GUISpot>(s => s.spot.Id == device.Id).spot;
+				if(!spot.IsBlackedout)
+				{
+					//spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+					switch (beatEvent)
+					{
+						case OnBeatEvent.Flash:
+							//Logger.AddLog(beatDetector.GetAverage().ToString());
+							spot.Flash(toBlack: beatDetector.GetAverage() > 0.5);
+							break;
+						case OnBeatEvent.RandomColor:
+							spot.GlobalIntensity = 255;
+							spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+							break;
+						case OnBeatEvent.Blackout:
+							spot.Blackout();
+							break;
+					}
+				}
 			});
 			
 		}
 
 		private void Form_Main_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			beatDetector.StopAnalysis();
-			beatDetector.Free();
+			midiScript.FireMidiInput = 0;
+			midiScript = null;
+			if(beatDetector != null)
+			{
+				beatDetector.StopAnalysis();
+				beatDetector.Free();
+			}
 			dmxManager.Dispose();
 		}
 
 		private void Btn_Settings_Click(object sender, EventArgs e)
 		{
-			Form settings = new Form_Settings();
+			Form_Settings settings = new Form_Settings();
+			settings.UseMoxScript(midiScript);
 			settings.Show();
 			settings.Disposed += Settings_Disposed;
 			this.Opacity = 0.75;
@@ -330,7 +484,7 @@ namespace DMX_MIDI
 			isAutoModeActive = !isAutoModeActive;
 			if (isAutoModeActive)
 			{
-				beatDetector = new(85, 48000);
+				beatDetector = new(84, 48000);
 				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
 				beatDetector.StartAnalysis();
 				Label_BPMInfo.Text = "Auto: Active";

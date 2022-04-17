@@ -37,29 +37,46 @@ namespace DMX_MIDI
 			}
 		}
 
+		private MoxScript midiScript;
+		public void UseMoxScript(MoxScript script)
+		{
+			if(script != null)
+			{
+				midiScript = script;
+			}
+		}
+
 		private void Form_Settings_Load(object sender, EventArgs e)
 		{
 			// Chargement des appareils MIDI
-			MoxScript midiScript = new MoxScript();
-			Logger.AddLog("Number of MIDI devices detected: " + midiScript.SysMidiInCount);
-			string deviceName = midiScript.GetFirstSysMidiInDev();
-			Logger.AddLog("First device detected: " + deviceName);
-			List_MIDIIn.Items.Clear();
-			while (deviceName != "")
+			if (midiScript != null)
 			{
-				Logger.AddLog("New device detected: " + deviceName);
-				List_MIDIIn.Items.Add(deviceName);
-				deviceName = midiScript.GetNextSysMidiInDev();
+				Logger.AddLog("Form_Settings.cs - Form_Settings_Load:I: Number of MIDI devices detected: " + midiScript.SysMidiInCount);
+				string deviceName = midiScript.GetFirstSysMidiInDev();
+				Logger.AddLog("Form_Settings.cs - Form_Settings_Load:I: First device detected: " + deviceName);
+				List_MIDIIn.Items.Clear();
+				string currentMidiDevice = Settings.Get(Settings.SettingsList.midiPort);
+				while (deviceName != "")
+				{
+					Logger.AddLog("Form_Settings.cs - Form_Settings_Load:I: New device detected: " + deviceName);
+					List_MIDIIn.Items.Add(deviceName);
+					deviceName = midiScript.GetNextSysMidiInDev();
+				}
+				List_MIDIIn.SelectedItem = currentMidiDevice;
 			}
+			else
+				Logger.AddLog("Form_Settings.cs - Form_Settings_Load:E: MoxScript is null, MIDI devices could not be found.");
 
 			// Chargement des ports série
 			string[] ports = SerialPort.GetPortNames();
 			List_Serial.Items.Clear();
+			string currentSerialPort = Settings.Get(Settings.SettingsList.dmxPort);
 			foreach (string port in ports)
 			{
-				Logger.AddLog("New Serial Port detected: " + port);
+				Logger.AddLog("Form_Settings.cs - Form_Settings_Load:I: New Serial Port detected: " + port);
 				List_Serial.Items.Add(port);
 			}
+			List_Serial.SelectedItem = currentSerialPort;
 		}
 
 		private void Btn_Close_Click(object sender, EventArgs e)
@@ -69,16 +86,14 @@ namespace DMX_MIDI
 
 		private void List_MIDIIn_DropDownClosed(object sender, EventArgs e)
 		{
-			Settings.SettingsList settings = Settings.GetSettings;
-			settings.midiPort = List_MIDIIn.Text;
-			Settings.Set(settings);
+			if(!(List_MIDIIn.SelectedItem is null))
+				Settings.Set(Settings.SettingsList.midiPort, List_MIDIIn.SelectedItem.ToString());
 		}
 
 		private void List_Serial_DropDownClosed(object sender, EventArgs e)
 		{
-			Settings.SettingsList settings = Settings.GetSettings;
-			settings.dmxPort = List_Serial.Text;
-			Settings.Set(settings);
+			if (!(List_Serial.SelectedItem is null))
+				Settings.Set(Settings.SettingsList.dmxPort, List_Serial.SelectedItem.ToString());
 		}
 	}
 }

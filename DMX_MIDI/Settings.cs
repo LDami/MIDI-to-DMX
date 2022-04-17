@@ -8,21 +8,53 @@ namespace DMX_MIDI
 {
 	public class Settings
 	{
-		public struct SettingsList
+		public class SettingsUpdatedEventArgs
 		{
-			public string midiPort;
-			public string dmxPort;
+			public SettingsList key;
+			public string newValue;
+		}
+		public delegate void SettingsUpdatedEventHandler(SettingsUpdatedEventArgs e);
+		public static event SettingsUpdatedEventHandler Updated;
+
+		public enum SettingsList
+		{
+			midiPort,
+			dmxPort
 		}
 
-		private static SettingsList localSettings = new SettingsList();
-		public static SettingsList GetSettings
+		private static Dictionary<SettingsList, string> localSettings;
+
+		public static void Init()
 		{
-			get => localSettings;
+			localSettings = new Dictionary<SettingsList, string>();
+			//TODO: load
 		}
 
-		public static void Set(SettingsList newlist)
+		public static string Get(SettingsList key)
 		{
-			localSettings = newlist;
+			if (localSettings != null)
+			{
+				if (localSettings.ContainsKey(key))
+					return localSettings[key];
+				else return null;
+
+			}
+			else
+				throw new Exception("Settings.Get has been called before Settings.Init !");
 		}
+		public static void Set(SettingsList key, string value)
+		{
+			if (localSettings != null)
+			{
+				if (localSettings.ContainsKey(key))
+					localSettings[key] = value;
+				else
+					localSettings.Add(key, value);
+				Updated?.Invoke(new SettingsUpdatedEventArgs() { key = key, newValue = value });
+			}
+			else
+				throw new Exception("Settings.Get has been called before Settings.Init !");
+		}
+
 	}
 }
