@@ -372,7 +372,7 @@ namespace DMX_MIDI
 					{
 						case OnBeatEvent.Flash:
 							//Logger.AddLog(beatDetector.GetAverage().ToString());
-							spot.Flash(toBlack: beatDetector.GetAverage() > 0.5);
+							spot.Flash(startingIntensity: (float)beatDetector.Peak, toBlack: beatDetector.GetAverage() > 0.5);
 							break;
 						case OnBeatEvent.RandomColor:
 							spot.GlobalIntensity = 255;
@@ -606,9 +606,9 @@ namespace DMX_MIDI
 					(Slider_Green_Value.Location.X - GreenSliderLastLocation.X) + e.X,
 					Slider_Green_Value.Location.Y
 				);
-				Slider_Green_Value.Location = red.ConstrainLocation(newLocation);
+				Slider_Green_Value.Location = green.ConstrainLocation(newLocation);
 				green.CurrentLocation = new Point(Slider_Green_Value.Location.X - Line_Green_Value.Location.X, Slider_Green_Value.Location.Y);
-				Label_Green_Value.Text = "Green: " + red.CurrentValue;
+				Label_Green_Value.Text = "Green: " + green.CurrentValue;
 				Line_Green_Value.BackColor = Color.FromArgb(0, green.CurrentValue, 0);
 				if (selectedDevice.spot != null)
 				{

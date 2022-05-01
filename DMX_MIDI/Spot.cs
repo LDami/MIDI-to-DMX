@@ -31,10 +31,10 @@ namespace DMX_MIDI
 			this.IsFlashing = false;
 		}
 
-		public void Flash(int duration = 500, bool toBlack = false)
+		public void Flash(int duration = 500, float startingIntensity = 255, bool toBlack = false)
 		{
 			const float minIntensity = 25;
-			this.GlobalIntensity = 128;
+			this.GlobalIntensity = startingIntensity * 255;
 			if (FlashThread == null || !FlashThread.IsAlive)
 			{
 				FlashThread = new Thread(() =>
