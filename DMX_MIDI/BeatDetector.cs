@@ -38,6 +38,8 @@ namespace DMX_MIDI
 
         // Public data
         public string DeviceName { get { return BassWasapi.GetDeviceInfo(_DeviceCode).Name; } }
+        public double Peak { get { return _PeakForFreq; } }
+        public double Average { get { return _AverageForFreq; } }
 
         // Threading
         private Thread _AnalysisThread;
@@ -48,11 +50,14 @@ namespace DMX_MIDI
         // Analysis settings
         private int _SamplingRate;
         private int _DeviceCode;
+        private int _Frequency = 100;
 
         // Analysis data
         private float[] _FFTData = new float[4096];
         private double[] _History = new double[HISTORY];
         private double _Variance; // Used to help detection with sound variance
+        private double _PeakForFreq; // Used for data visualisation
+        private double _AverageForFreq; // Used for data visualisation
 
         LevelToExcel excelLogger;
 
@@ -64,6 +69,9 @@ namespace DMX_MIDI
         {
             _SamplingRate = SamplingRate;
             _DeviceCode = DeviceCode;
+            _Frequency = 100;
+
+            saveInstant = false;
             Init();
         }
 
@@ -121,6 +129,17 @@ namespace DMX_MIDI
         }
 
         #endregion
+
+        public void SetFrenquency(int freq)
+		{
+            _Frequency = freq;
+		}
+
+        private bool saveInstant;
+        public void SaveInstant()
+		{
+            saveInstant = true;
+        }
 
         #region BASS-dedicated Methods
 
@@ -217,13 +236,23 @@ namespace DMX_MIDI
 
             // Calculate the energy of every result
             float actualEnergy = 0;
-
+            float energyForThisFreq = 0;
             for (int i = 2; i < 2048; i = i + 2)
             {
                 float real = _FFTData[i];
                 float complex = _FFTData[i + 1];
-                actualEnergy += (float)Math.Sqrt((double)(real * real + complex * complex));
+                energyForThisFreq = (float)Math.Sqrt((double)(real * real + complex * complex));
+                if (i > _Frequency - 50 && i < _Frequency + 50)
+                {
+                    actualEnergy += energyForThisFreq;
+                }
+                /*
+                if (saveInstant && i % 10 == 0)
+                    excelLogger.AddRow(i.ToString(), energyForThisFreq.ToString());
+                */
             }
+
+            saveInstant = false;
 
             double historyAverage = CalculateAverage(_History);
 
@@ -288,15 +317,16 @@ namespace DMX_MIDI
         {
             byte result = 0;
             double volumelevel = (double)volume / 32768 * 100;   // Volume level in %
-            //excelLogger.AddRow(DateTime.Now.ToString("HH/mm/ss ffff"), energy.ToString());
 
             double C = (-0.0025714 * _Variance) + 1.5142857;
             C = C * 1.15;
 
             // Compare energies with C*average
-            if (Math.Pow(energy, 2) > (C * historyAverage) && energy > 0.5)   // Second rule is for noise reduction
+            if (Math.Pow(energy, 2) > (C * historyAverage) && energy > 0.0005)   // Second rule is for noise reduction
             {
                 result = 1;
+                _PeakForFreq = energy;
+                _AverageForFreq = historyAverage;
             }
 
             if (result > 0 && volumelevel > 1500f)

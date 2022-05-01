@@ -57,6 +57,7 @@ namespace DMX_MIDI
 		private GUISpot selectedDevice;
 
 		private Slider red, green, blue;
+		private Slider freq;
 
 		private DMXManager dmxManager = new DMXManager();
 		private GUISpot[] spots;
@@ -119,6 +120,7 @@ namespace DMX_MIDI
 			red = new Slider(Slider.Color.R, Slider_Red_Value, Line_Red_Value);
 			green = new Slider(Slider.Color.G, Slider_Green_Value, Line_Green_Value);
 			blue = new Slider(Slider.Color.B, Slider_Blue_Value, Line_Blue_Value);
+			freq = new Slider(Slider.Color.None, Slider_Freq_Filter, Line_Freq_Filter);
 
 			spots = new GUISpot[2];
 			spots[0] = new GUISpot(
@@ -380,6 +382,16 @@ namespace DMX_MIDI
 					}
 				}
 			});
+
+			if (Label_PeakLevel.InvokeRequired)
+				Label_PeakLevel.BeginInvoke(new Action(() => Label_PeakLevel.Text = "Peak: " + beatDetector.Peak));
+			else
+				Label_PeakLevel.Text = "Peak: " + beatDetector.Peak;
+
+			if (Label_AverageLevel.InvokeRequired)
+				Label_AverageLevel.BeginInvoke(new Action(() => Label_AverageLevel.Text = "Average: " + beatDetector.Average));
+			else
+				Label_AverageLevel.Text = "Average: " + beatDetector.Average;
 			
 		}
 
@@ -538,6 +550,8 @@ namespace DMX_MIDI
 		Point GreenSliderLastLocation;
 		bool BlueSliderIsMoving;
 		Point BlueSliderLastLocation;
+		bool FreqSliderIsMoving;
+		Point FreqSliderLastLocation;
 
 		private void Slider_Red_Value_MouseDown(object sender, MouseEventArgs e)
 		{
@@ -639,6 +653,42 @@ namespace DMX_MIDI
 		private void Slider_Blue_Value_MouseUp(object sender, MouseEventArgs e)
 		{
 			BlueSliderIsMoving = false;
+		}
+
+		private void Slider_Freq_Filter_MouseDown(object sender, MouseEventArgs e)
+		{
+			if (e.Button == MouseButtons.Left)
+			{
+				FreqSliderIsMoving = true;
+				FreqSliderLastLocation = e.Location;
+			}
+		}
+
+		private void Slider_Freq_Filter_MouseMove(object sender, MouseEventArgs e)
+		{
+			if (FreqSliderIsMoving)
+			{
+				Point newLocation = new Point(
+					(Slider_Freq_Filter.Location.X - FreqSliderLastLocation.X) + e.X,
+					Slider_Freq_Filter.Location.Y
+				);
+				Slider_Freq_Filter.Location = red.ConstrainLocation(newLocation);
+				freq.CurrentLocation = new Point(Slider_Freq_Filter.Location.X - Line_Freq_Filter.Location.X, Slider_Freq_Filter.Location.Y);
+				Label_Freq_Filter.Text = "Frequency: " + (freq.CurrentValue * 20) + "hz";
+
+				beatDetector.SetFrenquency(freq.CurrentValue * 20);
+
+			}
+		}
+
+		private void Slider_Freq_Filter_MouseUp(object sender, MouseEventArgs e)
+		{
+			FreqSliderIsMoving = false;
+		}
+
+		private void Button_InstantToExcel_Click(object sender, EventArgs e)
+		{
+			beatDetector.SaveInstant();
 		}
 	}
 }

@@ -12,6 +12,7 @@ namespace DMX_MIDI
 	{
 		public enum Color
 		{
+			None,
 			R,
 			G,
 			B
