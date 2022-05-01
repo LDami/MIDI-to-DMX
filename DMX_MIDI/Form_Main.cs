@@ -169,6 +169,8 @@ namespace DMX_MIDI
 			{
 				ltControls[i] = new LightTriggerControl();
 				ltControls[i].LTName = $"#{i}";
+				ltControls[i].LTType = LightTriggerType.Fixed;
+				ltControls[i].LTEvt = OnBeatEvent.None;
 			}
 			for (int i = 0; i < MaxLTElements; i++)
 			{
