@@ -282,6 +282,7 @@ namespace DMX_MIDI
             this.Name = "Form_LightTriggerControl";
             this.Text = "Form_LightTriggerControl";
             this.Shown += new System.EventHandler(this.Form_LightTriggerControl_Shown);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Form_LightTriggerControl_MouseDown);
             this.ResumeLayout(false);
             this.PerformLayout();
 
