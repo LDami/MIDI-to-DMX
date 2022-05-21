@@ -76,10 +76,10 @@ namespace DMX_MIDI
 			if (ltControl != null)
 			{
 				List_Type.Items.AddRange(Enum.GetNames(typeof(LightTriggerType)));
-				List_Type.ValueMember = ltControl.LTType.ToString();
+				List_Type.SelectedIndex = List_Type.Items.IndexOf(ltControl.LTType.ToString());
 
 				List_EventType.Items.AddRange(Enum.GetNames(typeof(OnBeatEvent)));
-				List_EventType.ValueMember = ltControl.LTEvt.ToString();
+				List_EventType.SelectedIndex = List_EventType.Items.IndexOf(ltControl.LTEvt.ToString());
 
 				primaryColor = ltControl.PrimaryColor;
 				secondaryColor = ltControl.SecondaryColor;
