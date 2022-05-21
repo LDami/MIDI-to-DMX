@@ -17,6 +17,7 @@ namespace DMX_MIDI
 		public bool IsFlashing { get; set; }
 		public bool IsBlackedout { get; set; }
 		
+		private Thread PulseThread;
 		private Thread FlashThread;
 		private Thread BlackoutThread;
 
@@ -31,13 +32,13 @@ namespace DMX_MIDI
 			this.IsFlashing = false;
 		}
 
-		public void Flash(int duration = 500, float startingIntensity = 255, bool toBlack = false)
+		public void Pulse(int duration = 500, float startingIntensity = 255, bool toBlack = false)
 		{
 			const float minIntensity = 25;
 			this.GlobalIntensity = startingIntensity * 255;
-			if (FlashThread == null || !FlashThread.IsAlive)
+			if (PulseThread == null || !PulseThread.IsAlive)
 			{
-				FlashThread = new Thread(() =>
+				PulseThread = new Thread(() =>
 				{
 					int t = duration;
 					int step = 1; //1ms
@@ -49,6 +50,28 @@ namespace DMX_MIDI
 						Thread.Sleep(step);
 						t -= step;
 					}
+				});
+				PulseThread.Name = "Device Pulse Thread";
+				PulseThread.Priority = ThreadPriority.Highest;
+				PulseThread.Start();
+			}
+		}
+
+		public void Flash(int duration = 100)
+        {
+			if (FlashThread == null || !FlashThread.IsAlive)
+			{
+				this.GlobalIntensity = 255;
+				FlashThread = new Thread(() =>
+				{
+					int t = duration;
+					int step = 1; //1ms
+					while (t > 0)
+					{
+						Thread.Sleep(step);
+						t -= step;
+					}
+					this.GlobalIntensity = 0;
 				});
 				FlashThread.Name = "Device Flash Thread";
 				FlashThread.Priority = ThreadPriority.Highest;

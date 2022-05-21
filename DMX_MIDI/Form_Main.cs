@@ -62,7 +62,8 @@ namespace DMX_MIDI
 		private DMXManager dmxManager = new DMXManager();
 		private GUISpot[] spots;
 
-		private OnBeatEvent beatEvent = OnBeatEvent.Flash;
+		private OnBeatEvent defaultBeatEvent = OnBeatEvent.Flash;
+		private bool nextIsSecondaryColor = false;
 
 
 		private MoxScript midiScript;
@@ -78,6 +79,7 @@ namespace DMX_MIDI
 
 		private const int MaxLTElements = 5;
 		private LightTriggerControl[] ltControls;
+		private int ltSelectedIndex;
 		private Button ltPrevButton;
 		private Button ltNextButton;
 		private int ltIndex;
@@ -168,7 +170,7 @@ namespace DMX_MIDI
 			for (int i = 0; i < ltControls.Length; i++)
 			{
 				ltControls[i] = new LightTriggerControl();
-				ltControls[i].LTName = $"#{i}";
+				ltControls[i].LTName = $"#{i+1}";
 				ltControls[i].LTType = LightTriggerType.Fixed;
 				ltControls[i].LTEvt = OnBeatEvent.None;
 			}
@@ -178,6 +180,7 @@ namespace DMX_MIDI
 			}
 			lightTriggers.Controls.Add(ltNextButton);
 			lightTriggers.MouseWheel += LightTriggers_MouseWheel;
+			ltSelectedIndex = -1;
 
 			midiScript = new MoxScript();
 			midiScript.ShutdownAtEnd = 1;
@@ -193,7 +196,7 @@ namespace DMX_MIDI
 				switch(data1)
 				{
 					case 0x02:
-						if(beatEvent == OnBeatEvent.None)
+						if(defaultBeatEvent == OnBeatEvent.None)
 							spots.ToList().ForEach(s => s.spot.GlobalIntensity = data2*2);
 						break;
 				}
@@ -220,7 +223,7 @@ namespace DMX_MIDI
 						break;
 					case 0x15:
 						{
-							beatEvent = OnBeatEvent.Flash;
+							defaultBeatEvent = OnBeatEvent.Flash;
 							spots.ToList().ForEach(spot =>
 							{
 								spot.spot.IsBlackedout = false;
@@ -229,12 +232,12 @@ namespace DMX_MIDI
 						break;
 					case 0x24:
 						{
-							beatEvent = OnBeatEvent.Blackout;
+							defaultBeatEvent = OnBeatEvent.Blackout;
 						}
 						break;
 					case 0x26:
 						{
-							beatEvent = OnBeatEvent.RandomColor;
+							defaultBeatEvent = OnBeatEvent.RandomColor;
 							spots.ToList().ForEach(spot =>
 							{
 								spot.spot.IsBlackedout = false;
@@ -243,7 +246,7 @@ namespace DMX_MIDI
 						break;
 					case 0x29:
 						{
-							beatEvent = OnBeatEvent.None;
+							defaultBeatEvent = OnBeatEvent.None;
 							spots.ToList().ForEach(spot =>
 							{
 								spot.spot.IsBlackedout = false;
@@ -251,39 +254,70 @@ namespace DMX_MIDI
 						}
 						break;
 					case 0x2d:
+					{
+						if(status == 0x90)
 						{
-							spots.ToList().ForEach(spot =>
-							{
-								spot.spot.ColorValue = Color.FromArgb(255, 255, 255);
-							});
+							if (ltSelectedIndex == 0)
+								ltSelectedIndex = -1;
+							else
+								ltSelectedIndex = 0;
+							UpdateSelectedLightTriggerControl();
 						}
 						break;
+					}
 					case 0x2f:
+					{
+						if (status == 0x90)
 						{
-							spots.ToList().ForEach(spot =>
-							{
-								spot.spot.ColorValue = Color.FromArgb(255, 0, 0);
-							});
+							if (ltSelectedIndex == 1)
+								ltSelectedIndex = -1;
+							else
+								ltSelectedIndex = 1;
+							UpdateSelectedLightTriggerControl();
 						}
 						break;
+					}
 					case 0x31:
+					{
+						if (status == 0x90)
 						{
-							spots.ToList().ForEach(spot =>
-							{
-								spot.spot.ColorValue = Color.FromArgb(0, 255, 0);
-							});
+							if (ltSelectedIndex == 2)
+								ltSelectedIndex = -1;
+							else
+								ltSelectedIndex = 2;
+							UpdateSelectedLightTriggerControl();
 						}
 						break;
+					}
 					case 0x33:
+					{
+						if (status == 0x90)
 						{
-							spots.ToList().ForEach(spot =>
-							{
-								spot.spot.ColorValue = Color.FromArgb(0, 0, 255);
-							});
+							if (ltSelectedIndex == 3)
+								ltSelectedIndex = -1;
+							else
+								ltSelectedIndex = 3;
+							UpdateSelectedLightTriggerControl();
 						}
 						break;
+					}
 				}
 			//}
+		}
+
+		private void UpdateSelectedLightTriggerControl()
+		{
+			for (int i = 0; i < ltControls.Length; i++)
+				if (ltSelectedIndex != i) ltControls[i].Unselect();
+
+			if (ltSelectedIndex >= 0 && ltSelectedIndex < ltControls.Length)
+			{
+				ltControls[ltSelectedIndex].Select();
+				spots.ToList().ForEach(spot =>
+				{
+					spot.spot.IsBlackedout = false;
+				});
+			}
 		}
 
 		private void Settings_Updated(Settings.SettingsUpdatedEventArgs e)
@@ -358,32 +392,56 @@ namespace DMX_MIDI
 		{
 			//Logger.AddLog("beat: " + value);
 			Random rdm = new();
-			Label_BPM.ForeColor = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+			//Label_BPM.ForeColor = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
 
-			List<DMXDevice> devices = dmxManager.devices;
-			Spot spot;
-			devices.ForEach(device =>
+			if(ltSelectedIndex != -1)
+            {
+				defaultBeatEvent = ltControls[ltSelectedIndex].LTEvt;
+			}
+
+			if(ltSelectedIndex != -1) // One LT is selected
 			{
-				spot = spots.First<GUISpot>(s => s.spot.Id == device.Id).spot;
-				if(!spot.IsBlackedout)
+				if (ltControls[ltSelectedIndex].LTType == LightTriggerType.BeatDetection)
 				{
-					//spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
-					switch (beatEvent)
+					List<DMXDevice> devices = dmxManager.devices;
+					Spot spot;
+					devices.ForEach(device =>
 					{
-						case OnBeatEvent.Flash:
-							//Logger.AddLog(beatDetector.GetAverage().ToString());
-							spot.Flash(startingIntensity: (float)beatDetector.Peak, toBlack: beatDetector.GetAverage() > 0.5);
-							break;
-						case OnBeatEvent.RandomColor:
-							spot.GlobalIntensity = 255;
-							spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
-							break;
-						case OnBeatEvent.Blackout:
-							spot.Blackout();
-							break;
-					}
+						spot = spots.First<GUISpot>(s => s.spot.Id == device.Id).spot;
+						if (!spot.IsBlackedout)
+						{
+							if (ltSelectedIndex != -1)
+							{
+								spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
+							}
+							//spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+							switch (defaultBeatEvent)
+							{
+								case OnBeatEvent.Pulse:
+									//Logger.AddLog(beatDetector.GetAverage().ToString());
+
+									spot.ColorValue = rdm.NextDouble() > 0.5 ? ltControls[ltSelectedIndex].PrimaryColor : ltControls[ltSelectedIndex].SecondaryColor;
+
+
+									spot.Pulse(startingIntensity: (float)beatDetector.Peak, toBlack: beatDetector.GetAverage() > 0.5);
+									break;
+								case OnBeatEvent.Flash:
+									spot.Flash();
+									break;
+								case OnBeatEvent.RandomColor:
+									spot.GlobalIntensity = 255;
+									spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+									break;
+								case OnBeatEvent.Blackout:
+									spot.Blackout();
+									break;
+							}
+						}
+					});
 				}
-			});
+			}
+
+			nextIsSecondaryColor = !nextIsSecondaryColor;
 
 			if (Label_PeakLevel.InvokeRequired)
 				Label_PeakLevel.BeginInvoke(new Action(() => Label_PeakLevel.Text = "Peak: " + beatDetector.Peak));
@@ -495,27 +553,41 @@ namespace DMX_MIDI
 
 		private void Button_Auto_Click(object sender, EventArgs e)
 		{
-			isAutoModeActive = !isAutoModeActive;
 			if (isAutoModeActive)
-			{
-				beatDetector = new(84, 48000);
-				beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
-				beatDetector.StartAnalysis();
-				Label_BPMInfo.Text = "Auto: Active";
-			}
+				DisableAutoMode();
 			else
+				EnableAutoMode();
+		}
+
+		private void EnableAutoMode()
+        {
+			isAutoModeActive = true;
+			beatDetector = new(84, 48000);
+			beatDetector.Subscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
+			beatDetector.StartAnalysis();
+
+			if (Label_BPMInfo.InvokeRequired)
+				Label_BPMInfo.BeginInvoke(new Action(() => Label_BPMInfo.Text = "Auto: Active"));
+			else
+				Label_BPMInfo.Text = "Auto: Active";
+
+		}
+
+		private void DisableAutoMode()
+		{
+			isAutoModeActive = false;
+			if (beatDetector != null)
 			{
-				if(beatDetector != null)
-				{
-					beatDetector.StopAnalysis();
-					beatDetector.UnSubscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
-					beatDetector.Free();
-					beatDetector = null;
-				}
-				Label_BPMInfo.Text = "Auto: Inactive";
-				//dmxManager.Reconnect();
+				beatDetector.StopAnalysis();
+				beatDetector.UnSubscribe(new SpectrumBeatDetector.BeatDetectedHandler(BpmManager_Beat));
+				beatDetector.Free();
+				beatDetector = null;
 			}
-			//dmxManager.ResetTimeout();
+
+			if (Label_BPMInfo.InvokeRequired)
+				Label_BPMInfo.BeginInvoke(new Action(() => Label_BPMInfo.Text = "Auto: Inactive"));
+			else
+				Label_BPMInfo.Text = "Auto: Inactive";
 		}
 
 		private void TL_Current_MouseDown(object sender, MouseEventArgs e)

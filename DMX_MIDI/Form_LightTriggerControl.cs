@@ -96,8 +96,8 @@ namespace DMX_MIDI
 		{
 			OnLightTriggerChanged(new LightTriggerEventArgs
 			{
-				LightTriggerType = LightTriggerType.BeatDetection,
-				OnBeatEvent = OnBeatEvent.None,
+				LightTriggerType = (LightTriggerType)List_Type.SelectedIndex,
+				OnBeatEvent = (OnBeatEvent)List_EventType.SelectedIndex,
 				PrimaryColor = primaryColor,
 				SecondaryColor = secondaryColor
 			});
