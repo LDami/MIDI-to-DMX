@@ -64,6 +64,8 @@ namespace DMX_MIDI
 
 		private OnBeatEvent defaultBeatEvent = OnBeatEvent.Flash;
 		private bool nextIsSecondaryColor = false;
+		private Tapper tapper;
+		LeftOrRight primarySide = LeftOrRight.Left;
 
 
 		private MoxScript midiScript;
@@ -83,6 +85,7 @@ namespace DMX_MIDI
 		private Button ltPrevButton;
 		private Button ltNextButton;
 		private int ltIndex;
+		private Thread fixedLightThread;
 
 		private void Form_Main_Load(object sender, EventArgs e)
 		{
@@ -126,12 +129,12 @@ namespace DMX_MIDI
 
 			spots = new GUISpot[2];
 			spots[0] = new GUISpot(
-				new Spot(1, 0, new int[] { 0, 1, 2 }),
+				new Spot(1, 0, new int[] { 0, 1, 2 }, LeftOrRight.Left),
 				light1
 			);
 			Thread.Sleep(1);
 			spots[1] = new GUISpot(
-				new Spot(2, 6, new int[] { 0, 1, 2 }),
+				new Spot(2, 6, new int[] { 0, 1, 2 }, LeftOrRight.Right),
 				light2
 			);
 			dmxManager.devices.Add(spots[0].spot);
@@ -192,13 +195,86 @@ namespace DMX_MIDI
 			lightTriggers.MouseWheel += LightTriggers_MouseWheel;
 			ltSelectedIndex = -1;
 
+			fixedLightThread = null;
+			tapper = new(this);
+            tapper.TapEvent += Tapper_TapEvent;
+            tapper.BPMChanged += Tapper_BPMChanged;
+
 			midiScript = new MoxScript();
 			midiScript.ShutdownAtEnd = 1;
 			midiScript.FireMidiInput = 1;
 			midiScript.MidiInput += MidiScript_MidiInput;
+            midiScript.SysExInput += MidiScript_SysExInput;
 		}
 
-		private void MidiScript_MidiInput(int nTimestamp, int port, int status, int data1, int data2)
+        private void Tapper_BPMChanged(object sender, Tapper.BPMChangedEventArgs e)
+		{
+			if (Label_BPM.InvokeRequired)
+				Label_BPM.BeginInvoke(new Action(() => Label_BPM.Text = $"BPM: {e.newBPM}"));
+			else
+				Label_BPM.Text = $"BPM: {e.newBPM}";
+        }
+
+        private void Tapper_TapEvent(object sender, EventArgs e)
+        {
+			Random rdm = new();
+			Label_BPM.ForeColor = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+
+			if(ltSelectedIndex != -1)
+			{
+				if (ltControls[ltSelectedIndex].LTType == LightTriggerType.Tap)
+				{
+					List<DMXDevice> devices = dmxManager.devices;
+					Spot spot;
+					devices.ForEach(device =>
+					{
+						spot = spots.First<GUISpot>(s => s.spot.Id == device.Id).spot;
+						if (!spot.IsBlackedout)
+						{							
+							switch (ltControls[ltSelectedIndex].LTEvt)
+							{
+								case OnBeatEvent.PulseLeftRight:
+									if (spot.Side == primarySide)
+									{
+										spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
+									}
+									else
+									{
+										spot.ColorValue = ltControls[ltSelectedIndex].SecondaryColor;
+									}
+									spot.Pulse(100, 255, false);
+									break;
+								case OnBeatEvent.PulseAll:
+									spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
+
+									spot.Pulse(100, 0, false);
+									break;
+								case OnBeatEvent.Flash:
+									spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
+									spot.Flash();
+									break;
+								case OnBeatEvent.FlashRandomColor:
+									spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+									spot.Flash();
+									break;
+								case OnBeatEvent.RandomColor:
+									spot.GlobalIntensity = 255;
+									spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+									break;
+								case OnBeatEvent.Blackout:
+									spot.Blackout();
+									break;
+							}
+						}
+					});
+					primarySide = (primarySide == LeftOrRight.Left) ? LeftOrRight.Right : LeftOrRight.Left;
+				}
+
+			}
+
+		}
+
+        private void MidiScript_MidiInput(int nTimestamp, int port, int status, int data1, int data2)
 		{
 			Logger.AddLog($"Form_Main.cs - MidiScript_MidiInput:I: MIDI IN = {nTimestamp} - {port} - {status} - {data1} - {data2}");
 			//if(status == 0xB0) // CC
@@ -206,7 +282,7 @@ namespace DMX_MIDI
 				switch(data1)
 				{
 					case 0x02:
-						if(defaultBeatEvent == OnBeatEvent.None)
+						//if(defaultBeatEvent == OnBeatEvent.None)
 							spots.ToList().ForEach(s => s.spot.GlobalIntensity = data2*2);
 						break;
 				}
@@ -263,9 +339,15 @@ namespace DMX_MIDI
 							});
 						}
 						break;
+					case 0x2a:
+						if (status == 0x90)
+						{
+							tapper.Tap();
+						}
+						break;
 					case 0x2d:
 					{
-						if(status == 0x90)
+						if (status == 0x90)
 						{
 							if (ltSelectedIndex == 0)
 								ltSelectedIndex = -1;
@@ -275,7 +357,7 @@ namespace DMX_MIDI
 						}
 						break;
 					}
-					case 0x2f:
+				case 0x2f:
 					{
 						if (status == 0x90)
 						{
@@ -327,6 +409,106 @@ namespace DMX_MIDI
 				{
 					spot.spot.IsBlackedout = false;
 				});
+
+
+				if (ltControls[ltSelectedIndex].LTType == LightTriggerType.Fixed)
+				{
+					List<DMXDevice> devices = dmxManager.devices;
+					Spot spot;
+					devices.ForEach(device =>
+					{
+						spot = spots.First<GUISpot>(s => s.spot.Id == device.Id).spot;
+						spot.IsBlackedout = false;
+						spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
+						switch (ltControls[ltSelectedIndex].LTEvt)
+						{
+							case OnBeatEvent.PulseLeftRight:
+								if (spot.Side == primarySide)
+								{
+									spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
+								}
+								else
+								{
+									spot.ColorValue = ltControls[ltSelectedIndex].SecondaryColor;
+								}
+								spot.Pulse(500, 0, false);
+								break;
+							case OnBeatEvent.PulseAll:
+								spot.ColorValue = !nextIsSecondaryColor ? ltControls[ltSelectedIndex].PrimaryColor : ltControls[ltSelectedIndex].SecondaryColor;
+
+								spot.Pulse(500, 0, false);
+								break;
+							case OnBeatEvent.Flash:
+								spot.Flash();
+								break;
+							case OnBeatEvent.RandomColor:
+								/* Not available */
+								break;
+							case OnBeatEvent.Blackout:
+								spot.Blackout();
+								break;
+						}
+					});
+				}
+
+				if (ltControls[ltSelectedIndex].LTType == LightTriggerType.Frequency)
+				{
+					if (fixedLightThread != null)
+					{
+						fixedLightThread.Abort();
+						fixedLightThread = null;
+					}
+					LeftOrRight primarySide = LeftOrRight.Left;
+					fixedLightThread = new Thread(new ThreadStart(() =>
+					{
+						Random rdm = new();
+						int lastLTIndex = ltSelectedIndex;
+						while(lastLTIndex == ltSelectedIndex && !this.IsDisposed)
+						{
+							List<DMXDevice> devices = dmxManager.devices;
+							Spot spot;
+							devices.ForEach(device =>
+							{
+								spot = spots.First<GUISpot>(s => s.spot.Id == device.Id).spot;
+								switch (ltControls[ltSelectedIndex].LTEvt)
+								{
+									case OnBeatEvent.PulseLeftRight:
+										if (spot.Side == primarySide)
+										{
+											spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
+										}
+										else
+										{
+											spot.ColorValue = ltControls[ltSelectedIndex].SecondaryColor;
+										}
+										spot.Pulse(500, 0, false);
+										break;
+									case OnBeatEvent.PulseAll:
+										spot.ColorValue = !nextIsSecondaryColor ? ltControls[ltSelectedIndex].PrimaryColor : ltControls[ltSelectedIndex].SecondaryColor;
+
+										spot.Pulse(500, 0, false);
+										break;
+									case OnBeatEvent.Flash:
+										spot.Flash();
+										break;
+									case OnBeatEvent.RandomColor:
+										spot.GlobalIntensity = 255;
+										spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+										break;
+									case OnBeatEvent.Blackout:
+										spot.Blackout();
+										break;
+								}
+							});
+
+							nextIsSecondaryColor = !nextIsSecondaryColor;
+							primarySide = (primarySide == LeftOrRight.Left) ? LeftOrRight.Right : LeftOrRight.Left;
+
+							Thread.Sleep(500);
+						}
+					}));
+					fixedLightThread.Start();
+				}
 			}
 		}
 
@@ -404,10 +586,12 @@ namespace DMX_MIDI
 			Random rdm = new();
 			//Label_BPM.ForeColor = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
 
+			/*
 			if(ltSelectedIndex != -1)
             {
 				defaultBeatEvent = ltControls[ltSelectedIndex].LTEvt;
 			}
+			*/
 
 			if(ltSelectedIndex != -1) // One LT is selected
 			{
@@ -427,11 +611,13 @@ namespace DMX_MIDI
 							//spots.First<GUISpot>(s => s.spot.Id == device.Id).spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
 							switch (defaultBeatEvent)
 							{
-								case OnBeatEvent.Pulse:
-									//Logger.AddLog(beatDetector.GetAverage().ToString());
-
+								case OnBeatEvent.PulseLeftRight:
 									spot.ColorValue = rdm.NextDouble() > 0.5 ? ltControls[ltSelectedIndex].PrimaryColor : ltControls[ltSelectedIndex].SecondaryColor;
-
+									nextIsSecondaryColor = !nextIsSecondaryColor;
+									spot.Pulse(startingIntensity: (float)beatDetector.Peak, toBlack: beatDetector.GetAverage() > 0.5);
+									break;
+								case OnBeatEvent.PulseAll:
+									spot.ColorValue = !nextIsSecondaryColor ? ltControls[ltSelectedIndex].PrimaryColor : ltControls[ltSelectedIndex].SecondaryColor;
 
 									spot.Pulse(startingIntensity: (float)beatDetector.Peak, toBlack: beatDetector.GetAverage() > 0.5);
 									break;
@@ -448,10 +634,10 @@ namespace DMX_MIDI
 							}
 						}
 					});
+					nextIsSecondaryColor = !nextIsSecondaryColor;
 				}
 			}
 
-			nextIsSecondaryColor = !nextIsSecondaryColor;
 
 			if (Label_PeakLevel.InvokeRequired)
 				Label_PeakLevel.BeginInvoke(new Action(() => Label_PeakLevel.Text = "Peak: " + beatDetector.Peak));

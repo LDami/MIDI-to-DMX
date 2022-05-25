@@ -9,8 +9,10 @@ namespace DMX_MIDI
 	public enum OnBeatEvent
 	{
 		None = 0,
-		Pulse,
+		PulseLeftRight,
+		PulseAll,
 		Flash,
+		FlashRandomColor,
 		RandomColor,
 		Blackout,
 	}

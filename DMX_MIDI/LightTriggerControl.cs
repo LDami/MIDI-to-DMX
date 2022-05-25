@@ -13,7 +13,9 @@ namespace DMX_MIDI
 	public enum LightTriggerType
 	{
 		Fixed,
-		BeatDetection
+		Frequency,
+		BeatDetection,
+		Tap
 	}
 
 	// TODO Créer enum pour différents effets de lumière sur beat: flash, bounce, changement de couleur fixe (random ou custom)

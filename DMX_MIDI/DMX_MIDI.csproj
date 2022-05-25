@@ -221,6 +221,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Spot.cs" />
     <Compile Include="Slider.cs" />
+    <Compile Include="Tapper.cs" />
     <Compile Include="Timeline.cs" />
     <EmbeddedResource Include="Form_LightTriggerControl.resx">
       <DependentUpon>Form_LightTriggerControl.cs</DependentUpon>
