@@ -51,19 +51,17 @@ namespace DMX_MIDI
 		public void Select()
 		{
 			this.BackColor = selectedColor;
-			Btn_Edit.BackColor = selectedColor;
 		}
 		public void Unselect()
 		{
 			this.BackColor = defaultColor;
-			Btn_Edit.BackColor = defaultColor;
 		}
 
-		private void Btn_Edit_Click(object sender, EventArgs e)
+		public void Edit()
 		{
 			ltForm = new();
 			ltForm.LTControl = this;
-            ltForm.LightTriggerChanged += LtForm_LightTriggerChanged;
+			ltForm.LightTriggerChanged += LtForm_LightTriggerChanged;
 			ltForm.Show();
 		}
 

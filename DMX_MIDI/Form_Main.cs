@@ -173,6 +173,16 @@ namespace DMX_MIDI
 				ltControls[i].LTName = $"#{i+1}";
 				ltControls[i].LTType = LightTriggerType.Fixed;
 				ltControls[i].LTEvt = OnBeatEvent.None;
+				ltControls[i].Click += (sender, args) =>
+				{
+					// TODO: to fix: crash when enabled AUTO mode
+					//ltSelectedIndex = i;
+					//UpdateSelectedLightTriggerControl();
+				};
+				ltControls[i].DoubleClick += (sender, args) =>
+				{
+					((LightTriggerControl)sender).Edit();
+				};
 			}
 			for (int i = 0; i < MaxLTElements; i++)
 			{
