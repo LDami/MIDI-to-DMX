@@ -54,10 +54,17 @@ namespace DMX_MIDI
                 swThread.Start();
                 while (!this.mainForm.IsDisposed && threadActive && stepTimers.Count > 0)
                 {
-                    if(swThread.ElapsedMilliseconds >= stepTimers.Average())
+                    try
                     {
-                        TapEvent(this, new EventArgs());
-                        swThread.Restart();
+                        if (swThread.ElapsedMilliseconds >= stepTimers.Average())
+                        {
+                            TapEvent(this, new EventArgs());
+                            swThread.Restart();
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        Logger.AddLog("Tapper.cs - Tapper._:E: tapThreadStart has thrown an exception: " + ex.Message);
                     }
                     Thread.Sleep(1);
                 }
@@ -70,6 +77,7 @@ namespace DMX_MIDI
         {
             stepTimers.Clear();
             sw.Reset();
+            this.OnBPMChanged(new BPMChangedEventArgs(0));
         }
 
         public void Tap()
