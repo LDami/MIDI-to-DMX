@@ -122,10 +122,10 @@ namespace DMX_MIDI
 			timeline = new Timeline(TL_Line.Location, TL_Line.Size.Width);
 			TL_Current.Location = timeline.CurrentLocation;
 
-			red = new Slider(Slider.Color.R, Slider_Red_Value, Line_Red_Value);
-			green = new Slider(Slider.Color.G, Slider_Green_Value, Line_Green_Value);
-			blue = new Slider(Slider.Color.B, Slider_Blue_Value, Line_Blue_Value);
-			freq = new Slider(Slider.Color.None, Slider_Freq_Filter, Line_Freq_Filter);
+			red = new Slider(Slider_Red_Value, Line_Red_Value, 255, Slider.Color.R);
+			green = new Slider(Slider_Green_Value, Line_Green_Value, 255, Slider.Color.G);
+			blue = new Slider(Slider_Blue_Value, Line_Blue_Value, 255, Slider.Color.B);
+			freq = new Slider(Slider_Freq_Filter, Line_Freq_Filter, 20000, Slider.Color.None);
 
 			spots = new GUISpot[2];
 			spots[0] = new GUISpot(

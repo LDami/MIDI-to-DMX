@@ -63,9 +63,9 @@ namespace DMX_MIDI
 		{
 			InitializeComponent();
 
-			red = new Slider(Slider.Color.R, Slider_Red_Value, Line_Red_Value);
-			green = new Slider(Slider.Color.G, Slider_Green_Value, Line_Green_Value);
-			blue = new Slider(Slider.Color.B, Slider_Blue_Value, Line_Blue_Value);
+			red = new Slider(Slider_Red_Value, Line_Red_Value, 255, Slider.Color.R);
+			green = new Slider(Slider_Green_Value, Line_Green_Value, 255, Slider.Color.G);
+			blue = new Slider(Slider_Blue_Value, Line_Blue_Value, 255, Slider.Color.B);
 			isPrimarySelected = true;
 			Btn_PrimaryColor.FlatStyle = FlatStyle.Standard;
 			Btn_SecondaryColor.FlatStyle = FlatStyle.Flat;
@@ -233,13 +233,13 @@ namespace DMX_MIDI
 			if (isPrimarySelected)
 			{
 				primaryColor = Color.FromArgb(red.CurrentValue, green.CurrentValue, blue.CurrentValue);
-				Btn_PrimaryColor.BackColor = primaryColor;
 			}
 			else
 			{
 				secondaryColor = Color.FromArgb(red.CurrentValue, green.CurrentValue, blue.CurrentValue);
-				Btn_SecondaryColor.BackColor = secondaryColor;
 			}
+			Btn_PrimaryColor.BackColor = primaryColor;
+			Btn_SecondaryColor.BackColor = secondaryColor;
 		}
 	}
 }

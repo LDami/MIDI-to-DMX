@@ -25,7 +25,8 @@ namespace DMX_MIDI
 			set
 			{
 				this.currentLocation = value;
-				this.CurrentValue = (int)(255 * ((float)value.X / (float)this.LineElement.Size.Width));
+				this.currentValue = (int)(this.maxValue * ((float)value.X / (float)(this.LineElement.Width - this.SliderElement.Width)));
+				Update();
 			}
 		}
 		private int currentValue;
@@ -35,35 +36,33 @@ namespace DMX_MIDI
 			set
 			{
 				this.currentValue = value;
-				this.currentLocation = new Point((int)((float)value * (float)this.LineElement.Size.Width) / 255, this.currentLocation.Y);
-
-				this.SliderElement.Location = new Point(this.LineElement.Location.X + this.CurrentLocation.X, this.SliderElement.Location.Y);
-				this.SliderElement.Visible = true;
-				switch(this.GetColor)
-				{
-					case Color.R:
-						this.LineElement.BackColor = System.Drawing.Color.FromArgb(this.CurrentValue, 0, 0);
-						break;
-					case Color.G:
-						this.LineElement.BackColor = System.Drawing.Color.FromArgb(0, this.CurrentValue, 0);
-						break;
-					case Color.B:
-						this.LineElement.BackColor = System.Drawing.Color.FromArgb(0, 0, this.CurrentValue);
-						break;
-				}
+				Update();
 			}
 		}
+
+		private int maxValue;
+		public int MaxValue
+        {
+			get { return maxValue; }
+			set
+			{
+				this.maxValue = value;
+				Update();
+			}
+        }
 
 		private Color GetColor { get; set; }
 		Label SliderElement { get; set; }
 		Label LineElement { get; set; }
-		public Slider(Color color, Label slider, Label line)
+		public Slider(Label slider, Label line, int maxValue, Color color = Color.None)
 		{
-			this.GetColor = color;
 			this.SliderElement = slider;
 			this.LineElement = line;
+			this.maxValue = maxValue;
+			this.GetColor = color;
 
-			this.CurrentLocation = new Point(0, line.Location.Y);
+			this.currentValue = 0;
+			Update();
 		}
 
 		public Point ConstrainLocation(Point desiredLocation)
@@ -74,5 +73,30 @@ namespace DMX_MIDI
 				desiredLocation.X = (this.LineElement.Location.X + this.LineElement.Width - this.SliderElement.Width);
 			return desiredLocation;
 		}
+
+		public void Update()
+        {
+			if (this.SliderElement != null)
+			{
+				this.currentLocation = new Point((int)((float)this.currentValue * (float)(this.LineElement.Width - this.SliderElement.Width)) / this.maxValue, this.currentLocation.Y);
+				this.SliderElement.Location = new Point(this.LineElement.Location.X + this.currentLocation.X, this.SliderElement.Location.Y);
+				this.SliderElement.Visible = true;
+				switch (this.GetColor)
+				{
+					case Color.R:
+						this.LineElement.BackColor = System.Drawing.Color.FromArgb(this.CurrentValue, 0, 0);
+						break;
+					case Color.G:
+						this.LineElement.BackColor = System.Drawing.Color.FromArgb(0, this.CurrentValue, 0);
+						break;
+					case Color.B:
+						this.LineElement.BackColor = System.Drawing.Color.FromArgb(0, 0, this.CurrentValue);
+						break;
+					default:
+						this.LineElement.BackColor = System.Drawing.Color.Black;
+						break;
+				}
+			}
+        }
 	}
 }
