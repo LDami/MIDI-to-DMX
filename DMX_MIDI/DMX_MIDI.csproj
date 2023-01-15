@@ -200,6 +200,12 @@
     <Compile Include="Form_Main.Designer.cs">
       <DependentUpon>Form_Main.cs</DependentUpon>
     </Compile>
+    <Compile Include="Form_SpotSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_SpotSettings.Designer.cs">
+      <DependentUpon>Form_SpotSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="LevelToExcel.cs" />
     <Compile Include="LightTriggerControl.cs">
       <SubType>UserControl</SubType>
@@ -228,6 +234,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form_Main.resx">
       <DependentUpon>Form_Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_SpotSettings.resx">
+      <DependentUpon>Form_SpotSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LightTriggerControl.resx">
       <DependentUpon>LightTriggerControl.cs</DependentUpon>

@@ -65,6 +65,8 @@ namespace DMX_MIDI
 		private OnBeatEvent defaultBeatEvent = OnBeatEvent.Flash;
 		private bool nextIsSecondaryColor = false;
 		private Tapper tapper;
+		private int beatMultiplier = 0; // +2 = Lights triggered twice in a beat ; -2 = 2 beats for 1 light trigger
+		private bool beatMultiplierButtonPressed = false;
 		LeftOrRight primarySide = LeftOrRight.Left;
 
 
@@ -147,7 +149,16 @@ namespace DMX_MIDI
 					List<DMXDevice> devices = dmxManager.devices;
 					devices.ForEach(device =>
 					{
-						spots.First<GUISpot>(s => s.spot.Id == device.Id).picture.BackColor = device.ColorValue;
+						GUISpot spot = spots.First<GUISpot>(s => s.spot.Id == device.Id);
+						spot.picture.BackColor = device.ColorValue;
+						/*
+						if(selectedDevice.spot == spot.spot)
+                        {
+							red.CurrentValue = spot.spot.ColorValue.R;
+							green.CurrentValue = spot.spot.ColorValue.G;
+							blue.CurrentValue = spot.spot.ColorValue.B;
+                        }
+						*/
 					});
 					Thread.Sleep(50);
 				}
@@ -198,6 +209,7 @@ namespace DMX_MIDI
 			fixedLightThread = null;
 			tapper = new(this);
             tapper.TapEvent += Tapper_TapEvent;
+			tapper.TapEvent_DividedBy2 += Tapper_TapEventDividedBy2;
             tapper.BPMChanged += Tapper_BPMChanged;
 
 			midiScript = new MoxScript();
@@ -215,12 +227,19 @@ namespace DMX_MIDI
 				Label_BPM.Text = $"BPM: {e.newBPM}";
         }
 
+		private void Tapper_TapEventDividedBy2(object sender, EventArgs e)
+        {
+			//Console.WriteLine("Tapper_TapEventDividedBy2: Called, beatMultiplier = " + beatMultiplier);
+			if (beatMultiplier == 2)
+				Tapper_TapEvent(sender, e);
+        }
+
         private void Tapper_TapEvent(object sender, EventArgs e)
         {
 			Random rdm = new();
 			Label_BPM.ForeColor = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
 
-			if(ltSelectedIndex != -1)
+			if (ltSelectedIndex != -1)
 			{
 				if (ltControls[ltSelectedIndex].LTType == LightTriggerType.Tap)
 				{
@@ -233,6 +252,7 @@ namespace DMX_MIDI
 						{							
 							switch (ltControls[ltSelectedIndex].LTEvt)
 							{
+								// TODO: more events to have pulse AND left/right without pulse
 								case OnBeatEvent.PulseLeftRight:
 									if (spot.Side == primarySide)
 									{
@@ -242,16 +262,16 @@ namespace DMX_MIDI
 									{
 										spot.ColorValue = ltControls[ltSelectedIndex].SecondaryColor;
 									}
-									spot.Pulse(100, 255, false);
+									spot.Pulse(100, 196, false);
 									break;
 								case OnBeatEvent.PulseAll:
-									spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
+									spot.ColorValue = (spot.ColorValue != ltControls[ltSelectedIndex].PrimaryColor) ? ltControls[ltSelectedIndex].PrimaryColor : ltControls[ltSelectedIndex].SecondaryColor;
 
-									spot.Pulse(100, 0, false);
+									spot.Pulse(100, 196, false);
 									break;
 								case OnBeatEvent.Flash:
 									spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
-									spot.Flash();
+									spot.Flash(20);
 									break;
 								case OnBeatEvent.FlashRandomColor:
 									spot.ColorValue = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
@@ -340,13 +360,35 @@ namespace DMX_MIDI
 						}
 						break;
 					case 0x2a:
-						if (status == 0x90)
-						{
-							tapper.Tap();
-						}
-						break;
-					case 0x2d:
+					beatMultiplierButtonPressed = (status == 0x90);
+					if (status != 0x90)
+						beatMultiplier = 0;
+
+					if (Label_BPMInfo.InvokeRequired)
+						Label_BPMInfo.BeginInvoke(new Action(() => Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier));
+					else
+						Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier;
+					break;
+					case 0x2b:
+					if (status == 0x90)
 					{
+						tapper.Tap();
+					}
+					break;
+					case 0x2c:
+					if(beatMultiplierButtonPressed)
+					{
+						if(status == 0x90)
+						{
+							beatMultiplier += 2;
+						}
+						if (Label_BPMInfo.InvokeRequired)
+							Label_BPMInfo.BeginInvoke(new Action(() => Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier));
+						else
+							Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier;
+					}
+					break;
+					case 0x2d:
 						if (status == 0x90)
 						{
 							if (ltSelectedIndex == 0)
@@ -356,9 +398,20 @@ namespace DMX_MIDI
 							UpdateSelectedLightTriggerControl();
 						}
 						break;
-					}
-				case 0x2f:
+					case 0x2e:
+					if (beatMultiplierButtonPressed)
 					{
+						if (status == 0x90)
+						{
+							beatMultiplier += 2;
+						}
+						if (Label_BPMInfo.InvokeRequired)
+							Label_BPMInfo.BeginInvoke(new Action(() => Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier));
+						else
+							Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier;
+					}
+					break;
+					case 0x2f:
 						if (status == 0x90)
 						{
 							if (ltSelectedIndex == 1)
@@ -368,9 +421,7 @@ namespace DMX_MIDI
 							UpdateSelectedLightTriggerControl();
 						}
 						break;
-					}
 					case 0x31:
-					{
 						if (status == 0x90)
 						{
 							if (ltSelectedIndex == 2)
@@ -380,9 +431,7 @@ namespace DMX_MIDI
 							UpdateSelectedLightTriggerControl();
 						}
 						break;
-					}
 					case 0x33:
-					{
 						if (status == 0x90)
 						{
 							if (ltSelectedIndex == 3)
@@ -392,9 +441,16 @@ namespace DMX_MIDI
 							UpdateSelectedLightTriggerControl();
 						}
 						break;
-					}
 				}
 			//}
+		}
+
+		private void MidiScript_SysExInput(string bStrSysEx)
+		{
+			Logger.AddLog($"Form_Main.cs - MidiScript_SysExInput:I: SYSEX IN = {bStrSysEx}");
+			byte[] bStr = bStrSysEx.Split(' ').Where(item => item.Length > 0 && item != " ").Select(item => Convert.ToByte(item, 16)).ToArray();
+			int scene = bStr[9] + 0x01;
+			Logger.AddLog($"Form_Main.cs - MidiScript_SysExInput:I: Scene = {scene}");
 		}
 
 		private void UpdateSelectedLightTriggerControl()

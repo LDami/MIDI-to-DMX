@@ -22,9 +22,11 @@ namespace DMX_MIDI
 		public bool IsBlackedout { get; set; }
 		public LeftOrRight Side { get; set; }
 		
-		private Thread PulseThread;
 		private Thread FlashThread;
 		private Thread BlackoutThread;
+
+		private static bool isPulseThreadRunning;
+		private static bool isPulseThreadMustStop;
 
 		public Spot(int id, int startChannel, int[] colorChannels, LeftOrRight side)
 		{
@@ -32,35 +34,38 @@ namespace DMX_MIDI
 			this.StartChannel = startChannel;
 			this.ColorChannels = colorChannels.Length == 3 ? colorChannels : new int[3];
 			Random rdm = new Random();
-			this.ColorValue = Color.FromArgb(rdm.Next(255), rdm.Next(255), rdm.Next(255));
+			this.ColorValue = Color.White;
 			this.GlobalIntensity = 255;
 			this.IsFlashing = false;
 			this.Side = side;
+			isPulseThreadRunning = false;
 		}
 
 		public void Pulse(int duration = 500, float startingIntensity = 255, bool toBlack = false)
 		{
+			Thread PulseThread;
 			const float minIntensity = 25;
 			this.GlobalIntensity = startingIntensity;
-			if (PulseThread == null || !PulseThread.IsAlive)
+
+			isPulseThreadMustStop = true;
+
+			PulseThread = new Thread(() =>
 			{
-				PulseThread = new Thread(() =>
+				isPulseThreadMustStop = false;
+				int t = duration;
+				int step = 1; //1ms
+				while (t > 0 && !isPulseThreadMustStop)
 				{
-					int t = duration;
-					int step = 1; //1ms
-					while (t > 0)
-					{
-						this.GlobalIntensity -= (float)((float)128 / (float)duration);
-						if (!toBlack && this.GlobalIntensity <= minIntensity)
-							this.GlobalIntensity = minIntensity;
-						Thread.Sleep(step);
-						t -= step;
-					}
-				});
-				PulseThread.Name = "Device Pulse Thread";
-				PulseThread.Priority = ThreadPriority.Highest;
-				PulseThread.Start();
-			}
+					this.GlobalIntensity -= (float)(startingIntensity / (float)duration);
+					if (!toBlack && this.GlobalIntensity <= minIntensity)
+						this.GlobalIntensity = minIntensity;
+					Thread.Sleep(step);
+					t -= step;
+				}
+			});
+			PulseThread.Name = "Device Pulse Thread";
+			PulseThread.Priority = ThreadPriority.Highest;
+			PulseThread.Start();
 		}
 
 		public void Flash(int duration = 100)
@@ -93,10 +98,13 @@ namespace DMX_MIDI
 			{
 				BlackoutThread = new Thread(() =>
 				{
-					while (this.GlobalIntensity > 0 && this.IsBlackedout)
+					int t = duration;
+					int step = 1; //1ms
+					while (t > 0 && this.IsBlackedout)
 					{
 						this.GlobalIntensity -= (float)((float)255 / (float)duration);
-						Thread.Sleep(1);
+						Thread.Sleep(step);
+						t -= step;
 					}
 				});
 				BlackoutThread.Name = "Device Blackout Thread";

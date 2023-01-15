@@ -13,9 +13,14 @@ namespace DMX_MIDI
     {
         // Events
         public event EventHandler<EventArgs> TapEvent;
+        public event EventHandler<EventArgs> TapEvent_DividedBy2; // Called twice in a beat
         protected virtual void OnTap(EventArgs e)
         {
             TapEvent?.Invoke(this, e);
+        }
+        protected virtual void OnTap_DividedBy2(EventArgs e)
+        {
+            TapEvent_DividedBy2?.Invoke(this, e);
         }
         public class BPMChangedEventArgs : EventArgs
         {
@@ -43,6 +48,7 @@ namespace DMX_MIDI
         public Tapper(Form mainForm)
         {
             this.mainForm = mainForm;
+            bool dividedBy2EventCalled = false;
             stepTimers = new();
             sw = new();
             sw.Stop();
@@ -56,10 +62,16 @@ namespace DMX_MIDI
                 {
                     try
                     {
+                        if (swThread.ElapsedMilliseconds >= stepTimers.Average()/2 && !dividedBy2EventCalled)
+                        {
+                            dividedBy2EventCalled = true;
+                            TapEvent_DividedBy2(this, new EventArgs());
+                        }
                         if (swThread.ElapsedMilliseconds >= stepTimers.Average())
                         {
                             TapEvent(this, new EventArgs());
                             swThread.Restart();
+                            dividedBy2EventCalled = false;
                         }
                     }
                     catch(Exception ex)
