@@ -34,10 +34,10 @@ namespace DMX_MIDI
 		public OnBeatEvent LTEvt { get { return lt_evt; } set { lt_evt = value; Label_Event.Text = value.ToString(); } }
 
 		private Color primaryColor;
-		public Color PrimaryColor { get { return primaryColor; } set { primaryColor = value;} }
+		public Color PrimaryColor { get { return primaryColor; } set { primaryColor = value; this.Rect_PrimaryColor.BackColor = primaryColor; } }
 
 		private Color secondaryColor;
-		public Color SecondaryColor { get { return secondaryColor; } set { secondaryColor = value;} }
+		public Color SecondaryColor { get { return secondaryColor; } set { secondaryColor = value; this.Rect_SecondaryColor.BackColor = secondaryColor; } }
 
 		private Form_LightTriggerControl ltForm;
 		public LightTriggerControl()

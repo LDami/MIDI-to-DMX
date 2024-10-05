@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -179,15 +180,26 @@ namespace DMX_MIDI
 
 			ltIndex = 0;
 
+			Color[] colors =
+			{
+				Color.White,
+				Color.Firebrick,
+                Color.FromArgb(255, 3, 4),
+                Color.FromArgb(4, 3, 255)
+            };
+
 			ltControls = new LightTriggerControl[20];
 			lightTriggers.Controls.Add(ltPrevButton);
 			for (int i = 0; i < ltControls.Length; i++)
 			{
 				ltControls[i] = new LightTriggerControl();
 				ltControls[i].LTName = $"#{i+1}";
-				ltControls[i].LTType = LightTriggerType.Fixed;
-				ltControls[i].LTEvt = OnBeatEvent.None;
-				ltControls[i].Click += (sender, args) =>
+				ltControls[i].LTType = LightTriggerType.Tap;
+				ltControls[i].LTEvt = OnBeatEvent.LeftRight;
+                ltControls[i].PrimaryColor = colors[i % colors.Length];
+				if(i == 2)
+	                ltControls[i].SecondaryColor = colors[i % colors.Length + 1];
+                ltControls[i].Click += (sender, args) =>
 				{
 					// TODO: to fix: crash when enabled AUTO mode
 					//ltSelectedIndex = i;
@@ -209,7 +221,6 @@ namespace DMX_MIDI
 			fixedLightThread = null;
 			tapper = new(this);
             tapper.TapEvent += Tapper_TapEvent;
-			tapper.TapEvent_DividedBy2 += Tapper_TapEventDividedBy2;
             tapper.BPMChanged += Tapper_BPMChanged;
 
 			midiScript = new MoxScript();
@@ -217,7 +228,25 @@ namespace DMX_MIDI
 			midiScript.FireMidiInput = 1;
 			midiScript.MidiInput += MidiScript_MidiInput;
             midiScript.SysExInput += MidiScript_SysExInput;
-		}
+
+            // Load default midi device and serial port
+
+
+            // Chargement des appareils MIDI
+            if (midiScript != null)
+            {
+                Logger.AddLog("Form_Main.cs - Form_Main_Load:I: Number of MIDI devices detected: " + midiScript.SysMidiInCount);
+                string deviceName = midiScript.GetFirstSysMidiInDev();
+                Logger.AddLog("Form_Main.cs - Form_Main_Load:I: First device detected: " + deviceName);
+                Settings.Set(Settings.SettingsList.midiPort, deviceName);
+            }
+            else
+                Logger.AddLog("Form_Main.cs - Form_Main_Load:E: MoxScript is null, MIDI devices could not be found.");
+
+            // Chargement des ports série
+            string[] ports = SerialPort.GetPortNames();
+            Settings.Set(Settings.SettingsList.dmxPort, ports[0]);
+        }
 
         private void Tapper_BPMChanged(object sender, Tapper.BPMChangedEventArgs e)
 		{
@@ -227,17 +256,24 @@ namespace DMX_MIDI
 				Label_BPM.Text = $"BPM: {e.newBPM}";
         }
 
-		private void Tapper_TapEventDividedBy2(object sender, EventArgs e)
-        {
-			//Console.WriteLine("Tapper_TapEventDividedBy2: Called, beatMultiplier = " + beatMultiplier);
-			if (beatMultiplier == 2)
-				Tapper_TapEvent(sender, e);
-        }
-
-        private void Tapper_TapEvent(object sender, EventArgs e)
+        private void Tapper_TapEvent(object sender, Tapper.TapEventArgs e)
         {
 			Random rdm = new();
 			Label_BPM.ForeColor = Color.FromArgb(rdm.Next(0, 255), rdm.Next(0, 255), rdm.Next(0, 255));
+
+			// Cancel tap if the division is not used in this beatMultiplier
+			if(beatMultiplier != 0)
+			{
+				if (beatMultiplier == 4 && e.BeatDivision % 2 != 0)
+					return;
+				if (beatMultiplier == 2 && !(e.BeatDivision == 1 || e.BeatDivision == 4))
+					return;
+			}
+			else
+			{
+				if (e.BeatDivision != 1)
+					return;
+			}
 
 			if (ltSelectedIndex != -1)
 			{
@@ -252,7 +288,16 @@ namespace DMX_MIDI
 						{							
 							switch (ltControls[ltSelectedIndex].LTEvt)
 							{
-								// TODO: more events to have pulse AND left/right without pulse
+                                case OnBeatEvent.LeftRight:
+                                    if (spot.Side == primarySide)
+                                    {
+                                        spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
+                                    }
+                                    else
+                                    {
+                                        spot.ColorValue = ltControls[ltSelectedIndex].SecondaryColor;
+                                    }
+                                    break;
 								case OnBeatEvent.PulseLeftRight:
 									if (spot.Side == primarySide)
 									{
@@ -262,14 +307,14 @@ namespace DMX_MIDI
 									{
 										spot.ColorValue = ltControls[ltSelectedIndex].SecondaryColor;
 									}
-									spot.Pulse(100, 196, false);
+									spot.Pulse(100, 128, false);
 									break;
-								case OnBeatEvent.PulseAll:
-									spot.ColorValue = (spot.ColorValue != ltControls[ltSelectedIndex].PrimaryColor) ? ltControls[ltSelectedIndex].PrimaryColor : ltControls[ltSelectedIndex].SecondaryColor;
+                                case OnBeatEvent.PulseAll:
+                                    spot.ColorValue = (spot.ColorValue != ltControls[ltSelectedIndex].PrimaryColor) ? ltControls[ltSelectedIndex].PrimaryColor : ltControls[ltSelectedIndex].SecondaryColor;
 
-									spot.Pulse(100, 196, false);
-									break;
-								case OnBeatEvent.Flash:
+                                    spot.Pulse(100, 128, false);
+                                    break;
+                                case OnBeatEvent.Flash:
 									spot.ColorValue = ltControls[ltSelectedIndex].PrimaryColor;
 									spot.Flash(20);
 									break;
@@ -294,155 +339,73 @@ namespace DMX_MIDI
 
 		}
 
+		private void ToggleSelectLightControlTrigger(int index)
+        {
+            if (ltSelectedIndex == index)
+                ltSelectedIndex = -1;
+            else
+                ltSelectedIndex = index;
+            UpdateSelectedLightTriggerControl();
+        }
+
         private void MidiScript_MidiInput(int nTimestamp, int port, int status, int data1, int data2)
 		{
 			Logger.AddLog($"Form_Main.cs - MidiScript_MidiInput:I: MIDI IN = {nTimestamp} - {port} - {status} - {data1} - {data2}");
-			//if(status == 0xB0) // CC
-			//{
-				switch(data1)
-				{
-					case 0x02:
-						//if(defaultBeatEvent == OnBeatEvent.None)
-							spots.ToList().ForEach(s => s.spot.GlobalIntensity = data2*2);
-						break;
-				}
-			//}
-			//else if(status == 0x90) // Note On
-			//{
-				switch (data1)
-				{
-					case 0x14:
-						if (data2 == 0)
-						{
-							spots.ToList().ForEach(spot =>
-							{
-								spot.spot.IsFlashing = false;
-							});
-						}
-						else
-						{
-							spots.ToList().ForEach(spot =>
-							{
-								spot.spot.IsFlashing = true;
-							});
-						}
-						break;
-					case 0x15:
-						{
-							defaultBeatEvent = OnBeatEvent.Flash;
-							spots.ToList().ForEach(spot =>
-							{
-								spot.spot.IsBlackedout = false;
-							});
-						}
-						break;
-					case 0x24:
-						{
-							defaultBeatEvent = OnBeatEvent.Blackout;
-						}
-						break;
-					case 0x26:
-						{
-							defaultBeatEvent = OnBeatEvent.RandomColor;
-							spots.ToList().ForEach(spot =>
-							{
-								spot.spot.IsBlackedout = false;
-							});
-						}
-						break;
-					case 0x29:
-						{
-							defaultBeatEvent = OnBeatEvent.None;
-							spots.ToList().ForEach(spot =>
-							{
-								spot.spot.IsBlackedout = false;
-							});
-						}
-						break;
-					case 0x2a:
-					beatMultiplierButtonPressed = (status == 0x90);
-					if (status != 0x90)
-						beatMultiplier = 0;
 
-					if (Label_BPMInfo.InvokeRequired)
-						Label_BPMInfo.BeginInvoke(new Action(() => Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier));
-					else
-						Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier;
+			MidiDevice.MidiActionEx? midiAction = null;
+			if (Settings.Get(Settings.SettingsList.midiPort) == "nanoPAD2")
+			{
+				midiAction = NanoPad2.GetMidiAction(Convert.ToByte(status), Convert.ToByte(data1), status == 0x90 || (status == 0xb0 && data2 == 0x7f));
+			}
+			Console.WriteLine("midiAction = " + midiAction.Value.Action + " (" + midiAction.Value.ParamValue + ")");
+            switch (midiAction.Value.Action)
+            {
+				case MidiDevice.MidiAction.UpdateGlobalIntensityWithData2:
+                    spots.ToList().ForEach(s => s.spot.GlobalIntensity = data2 * 2);
 					break;
-					case 0x2b:
-					if (status == 0x90)
-					{
-						tapper.Tap();
-					}
+                case MidiDevice.MidiAction.SelectCue1:
+                    ToggleSelectLightControlTrigger(0);
+                    break;
+                case MidiDevice.MidiAction.SelectCue2:
+                    ToggleSelectLightControlTrigger(1);
+                    break;
+                case MidiDevice.MidiAction.SelectCue3:
+                    ToggleSelectLightControlTrigger(2);
+                    break;
+                case MidiDevice.MidiAction.SelectCue4:
+                    ToggleSelectLightControlTrigger(3);
+                    break;
+                case MidiDevice.MidiAction.SelectCue5:
+                    ToggleSelectLightControlTrigger(4);
+                    break;
+                case MidiDevice.MidiAction.SelectCue6:
+                    ToggleSelectLightControlTrigger(5);
+                    break;
+                case MidiDevice.MidiAction.SelectCue7:
+                    ToggleSelectLightControlTrigger(6);
+                    break;
+                case MidiDevice.MidiAction.SelectCue8:
+                    ToggleSelectLightControlTrigger(7);
+                    break;
+                case MidiDevice.MidiAction.Flash:
+                    spots.ToList().ForEach(spot =>
+                    {
+                        spot.spot.IsFlashing = true;
+                    });
+                    break;
+                case MidiDevice.MidiAction.StopFlash:
+                    spots.ToList().ForEach(spot =>
+                    {
+                        spot.spot.IsFlashing = false;
+                    });
+                    break;
+                case MidiDevice.MidiAction.Tap:
+                    tapper.Tap();
 					break;
-					case 0x2c:
-					if(beatMultiplierButtonPressed)
-					{
-						if(status == 0x90)
-						{
-							beatMultiplier += 2;
-						}
-						if (Label_BPMInfo.InvokeRequired)
-							Label_BPMInfo.BeginInvoke(new Action(() => Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier));
-						else
-							Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier;
-					}
-					break;
-					case 0x2d:
-						if (status == 0x90)
-						{
-							if (ltSelectedIndex == 0)
-								ltSelectedIndex = -1;
-							else
-								ltSelectedIndex = 0;
-							UpdateSelectedLightTriggerControl();
-						}
-						break;
-					case 0x2e:
-					if (beatMultiplierButtonPressed)
-					{
-						if (status == 0x90)
-						{
-							beatMultiplier += 2;
-						}
-						if (Label_BPMInfo.InvokeRequired)
-							Label_BPMInfo.BeginInvoke(new Action(() => Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier));
-						else
-							Label_BPMInfo.Text = "Info: BeatMultiplier: x" + beatMultiplier;
-					}
-					break;
-					case 0x2f:
-						if (status == 0x90)
-						{
-							if (ltSelectedIndex == 1)
-								ltSelectedIndex = -1;
-							else
-								ltSelectedIndex = 1;
-							UpdateSelectedLightTriggerControl();
-						}
-						break;
-					case 0x31:
-						if (status == 0x90)
-						{
-							if (ltSelectedIndex == 2)
-								ltSelectedIndex = -1;
-							else
-								ltSelectedIndex = 2;
-							UpdateSelectedLightTriggerControl();
-						}
-						break;
-					case 0x33:
-						if (status == 0x90)
-						{
-							if (ltSelectedIndex == 3)
-								ltSelectedIndex = -1;
-							else
-								ltSelectedIndex = 3;
-							UpdateSelectedLightTriggerControl();
-						}
-						break;
-				}
-			//}
+                case MidiDevice.MidiAction.BeatMultiplier:
+                    beatMultiplier = midiAction.Value.ParamValue; // Ne fonctionnera qu'avec 2 pas car Tapper ne divise pas par 4
+                    break;
+            }
 		}
 
 		private void MidiScript_SysExInput(string bStrSysEx)

@@ -1,0 +1,185 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|c:\\users\\ldami\\documents\\dev\\midi-to-dmx\\dmx_midi\\nanopad2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|solutionrelative:dmx_midi\\nanopad2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\dmx_midi\\tapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|solutionrelative:dmx_midi\\tapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\dmx_midi\\form_main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|solutionrelative:dmx_midi\\form_main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|c:\\users\\ldami\\documents\\dev\\midi-to-dmx\\dmx_midi\\mididevice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|solutionrelative:dmx_midi\\mididevice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\dmx_midi\\lighttriggercontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|solutionrelative:dmx_midi\\lighttriggercontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\dmx_midi\\form_main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|solutionrelative:dmx_midi\\form_main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\dmx_midi\\beatdetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|solutionrelative:dmx_midi\\beatdetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\dmx_midi\\spot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|solutionrelative:dmx_midi\\spot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\dmx_midi\\dmxmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|solutionrelative:dmx_midi\\dmxmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\dmx_midi\\slider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EFB81F89-3263-458A-A5FE-B1F07206E5CB}|DMX_MIDI\\DMX_MIDI.csproj|solutionrelative:dmx_midi\\slider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MidiDevice.cs",
+              "DocumentMoniker": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\MidiDevice.cs",
+              "RelativeDocumentMoniker": "DMX_MIDI\\MidiDevice.cs",
+              "ToolTip": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\MidiDevice.cs",
+              "RelativeToolTip": "DMX_MIDI\\MidiDevice.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAMwBAAAAAYAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-23T18:15:31.31Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "NanoPad2.cs",
+              "DocumentMoniker": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\NanoPad2.cs",
+              "RelativeDocumentMoniker": "DMX_MIDI\\NanoPad2.cs",
+              "ToolTip": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\NanoPad2.cs",
+              "RelativeToolTip": "DMX_MIDI\\NanoPad2.cs",
+              "ViewState": "AQIAAB0AAAAAAAAAAAAAACkAAAAaAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-10T20:21:32.557Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Tapper.cs",
+              "DocumentMoniker": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\Tapper.cs",
+              "RelativeDocumentMoniker": "DMX_MIDI\\Tapper.cs",
+              "ToolTip": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\Tapper.cs",
+              "RelativeToolTip": "DMX_MIDI\\Tapper.cs",
+              "ViewState": "AQIAACgAAAAAAAAAAAAowDMAAAANAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-26T21:06:04.038Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "LightTriggerControl.cs",
+              "DocumentMoniker": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\LightTriggerControl.cs",
+              "RelativeDocumentMoniker": "DMX_MIDI\\LightTriggerControl.cs",
+              "ToolTip": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\LightTriggerControl.cs",
+              "RelativeToolTip": "DMX_MIDI\\LightTriggerControl.cs",
+              "ViewState": "AQIAABwAAAAAAAAAAAAAACgAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-02-19T21:31:50.406Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Spot.cs",
+              "DocumentMoniker": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\Spot.cs",
+              "RelativeDocumentMoniker": "DMX_MIDI\\Spot.cs",
+              "ToolTip": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\Spot.cs",
+              "RelativeToolTip": "DMX_MIDI\\Spot.cs",
+              "ViewState": "AQIAABMAAAAAAAAAAADgvyUAAAAdAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-02-19T21:31:52.575Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "BeatDetector.cs",
+              "DocumentMoniker": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\BeatDetector.cs",
+              "RelativeDocumentMoniker": "DMX_MIDI\\BeatDetector.cs",
+              "ToolTip": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\BeatDetector.cs",
+              "RelativeToolTip": "DMX_MIDI\\BeatDetector.cs",
+              "ViewState": "AQIAABMAAAAAAAAAAAAAwCMAAAA9AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-02-19T21:31:52.575Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Form_Main.cs",
+              "DocumentMoniker": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\Form_Main.cs",
+              "RelativeDocumentMoniker": "DMX_MIDI\\Form_Main.cs",
+              "ToolTip": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\Form_Main.cs",
+              "RelativeToolTip": "DMX_MIDI\\Form_Main.cs",
+              "ViewState": "AQIAAP8AAAAAAAAAAAAiwAwBAAAEAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-02-19T21:31:52.576Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Form_Main.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\Form_Main.cs",
+              "RelativeDocumentMoniker": "DMX_MIDI\\Form_Main.cs",
+              "ToolTip": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\Form_Main.cs [Design]",
+              "RelativeToolTip": "DMX_MIDI\\Form_Main.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-02-19T21:31:52.577Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "DMXManager.cs",
+              "DocumentMoniker": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\DMXManager.cs",
+              "RelativeDocumentMoniker": "DMX_MIDI\\DMXManager.cs",
+              "ToolTip": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\DMXManager.cs",
+              "RelativeToolTip": "DMX_MIDI\\DMXManager.cs",
+              "ViewState": "AQIAACYAAAAAAAAAAAAwwI0AAAAXAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-18T21:32:41.818Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Slider.cs",
+              "DocumentMoniker": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\Slider.cs",
+              "RelativeDocumentMoniker": "DMX_MIDI\\Slider.cs",
+              "ToolTip": "C:\\Users\\ldami\\Documents\\Dev\\MIDI-to-DMX\\DMX_MIDI\\Slider.cs",
+              "RelativeToolTip": "DMX_MIDI\\Slider.cs",
+              "ViewState": "AQIAABUAAAAAAAAAAAA5wCEAAAAcAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-02-19T21:31:52.577Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

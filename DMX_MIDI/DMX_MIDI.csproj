@@ -206,7 +206,6 @@
     <Compile Include="Form_SpotSettings.Designer.cs">
       <DependentUpon>Form_SpotSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="LevelToExcel.cs" />
     <Compile Include="LightTriggerControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -214,6 +213,8 @@
       <DependentUpon>LightTriggerControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Logger.cs" />
+    <Compile Include="MidiDevice.cs" />
+    <Compile Include="NanoPad2.cs" />
     <Compile Include="OnBeatEvent.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

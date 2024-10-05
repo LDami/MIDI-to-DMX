@@ -59,8 +59,6 @@ namespace DMX_MIDI
         private double _PeakForFreq; // Used for data visualisation
         private double _AverageForFreq; // Used for data visualisation
 
-        LevelToExcel excelLogger;
-
         #endregion
 
         #region Setup methods

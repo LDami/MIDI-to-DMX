@@ -86,13 +86,13 @@ namespace DMX_MIDI
 
 		private void List_MIDIIn_DropDownClosed(object sender, EventArgs e)
 		{
-			if(!(List_MIDIIn.SelectedItem is null))
+			if(List_MIDIIn.SelectedItem is not null)
 				Settings.Set(Settings.SettingsList.midiPort, List_MIDIIn.SelectedItem.ToString());
 		}
 
 		private void List_Serial_DropDownClosed(object sender, EventArgs e)
 		{
-			if (!(List_Serial.SelectedItem is null))
+			if (List_Serial.SelectedItem is not null)
 				Settings.Set(Settings.SettingsList.dmxPort, List_Serial.SelectedItem.ToString());
 		}
 	}

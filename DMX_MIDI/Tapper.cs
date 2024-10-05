@@ -11,24 +11,19 @@ namespace DMX_MIDI
 {
     internal class Tapper
     {
+        public class TapEventArgs(int division) : EventArgs
+        {
+            public int BeatDivision = division; // 1-8
+        }
         // Events
-        public event EventHandler<EventArgs> TapEvent;
-        public event EventHandler<EventArgs> TapEvent_DividedBy2; // Called twice in a beat
-        protected virtual void OnTap(EventArgs e)
+        public event EventHandler<TapEventArgs> TapEvent; // Called 8 times per beat, new beat on e.BeatDivision == 1
+        protected virtual void OnTap(TapEventArgs e)
         {
             TapEvent?.Invoke(this, e);
         }
-        protected virtual void OnTap_DividedBy2(EventArgs e)
+        public class BPMChangedEventArgs(int bpm) : EventArgs()
         {
-            TapEvent_DividedBy2?.Invoke(this, e);
-        }
-        public class BPMChangedEventArgs : EventArgs
-        {
-            public int newBPM;
-            public BPMChangedEventArgs(int bpm) : base()
-            {
-                newBPM = bpm;
-            }
+            public int newBPM = bpm;
         }
         public event EventHandler<BPMChangedEventArgs> BPMChanged;
         protected virtual void OnBPMChanged(BPMChangedEventArgs e)
@@ -44,34 +39,34 @@ namespace DMX_MIDI
         private Thread tapThread;
         private ThreadStart tapThreadStart;
         private bool threadActive;
+        private int currentDivision;
 
         public Tapper(Form mainForm)
         {
             this.mainForm = mainForm;
-            bool dividedBy2EventCalled = false;
             stepTimers = new();
             sw = new();
             sw.Stop();
+            currentDivision = 1;
             tapThreadStart = new ThreadStart(() =>
             {
                 threadActive = true;
-                TapEvent(this, new EventArgs());
+                TapEvent(this, new TapEventArgs(currentDivision));
                 swThread = new();
                 swThread.Start();
                 while (!this.mainForm.IsDisposed && threadActive && stepTimers.Count > 0)
                 {
                     try
                     {
-                        if (swThread.ElapsedMilliseconds >= stepTimers.Average()/2 && !dividedBy2EventCalled)
+                        double avg = stepTimers.Average();
+                        if (swThread.ElapsedMilliseconds >= (avg / 8) * currentDivision)
                         {
-                            dividedBy2EventCalled = true;
-                            TapEvent_DividedBy2(this, new EventArgs());
+                            TapEvent(this, new TapEventArgs(currentDivision ++));
                         }
-                        if (swThread.ElapsedMilliseconds >= stepTimers.Average())
+                        if (swThread.ElapsedMilliseconds >= avg)
                         {
-                            TapEvent(this, new EventArgs());
+                            currentDivision = 1;
                             swThread.Restart();
-                            dividedBy2EventCalled = false;
                         }
                     }
                     catch(Exception ex)

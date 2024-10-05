@@ -35,7 +35,7 @@ namespace DMX_MIDI
 			this.ColorChannels = colorChannels.Length == 3 ? colorChannels : new int[3];
 			Random rdm = new Random();
 			this.ColorValue = Color.White;
-			this.GlobalIntensity = 255;
+			this.GlobalIntensity = 128;
 			this.IsFlashing = false;
 			this.Side = side;
 			isPulseThreadRunning = false;
