@@ -213,6 +213,18 @@
       <DependentUpon>LightTriggerControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Logger.cs" />
+    <Compile Include="Form_ManualDMX.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_ManualDMX.Designer.cs">
+      <DependentUpon>Form_ManualDMX.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ManualDMXSliderControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ManualDMXSliderControl.Designer.cs">
+      <DependentUpon>ManualDMXSliderControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="MidiDevice.cs" />
     <Compile Include="NanoPad2.cs" />
     <Compile Include="OnBeatEvent.cs" />
@@ -236,11 +248,17 @@
     <EmbeddedResource Include="Form_Main.resx">
       <DependentUpon>Form_Main.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Form_ManualDMX.resx">
+      <DependentUpon>Form_ManualDMX.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form_SpotSettings.resx">
       <DependentUpon>Form_SpotSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LightTriggerControl.resx">
       <DependentUpon>LightTriggerControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ManualDMXSliderControl.resx">
+      <DependentUpon>ManualDMXSliderControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

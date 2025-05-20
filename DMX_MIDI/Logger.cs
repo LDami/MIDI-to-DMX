@@ -7,7 +7,7 @@ namespace DMX_MIDI
 {
     class Logger
     {
-        private static bool DEBUG = false;
+        private static bool DEBUG = true;
 
         private static Mutex logMutex = new Mutex();
 

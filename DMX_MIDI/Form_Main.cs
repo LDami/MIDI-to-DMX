@@ -60,7 +60,7 @@ namespace DMX_MIDI
 		private Slider red, green, blue;
 		private Slider freq;
 
-		private DMXManager dmxManager = new DMXManager();
+		private DMXManager dmxManager = new();
 		private GUISpot[] spots;
 
 		private OnBeatEvent defaultBeatEvent = OnBeatEvent.Flash;
@@ -100,7 +100,7 @@ namespace DMX_MIDI
 			MidiDeviceName = Settings.Get(Settings.SettingsList.midiPort) ?? "None";
 			SerialPortName = Settings.Get(Settings.SettingsList.dmxPort) ?? "None";
 
-			Thread checkStatus = new Thread(t =>
+			Thread checkStatus = new(t =>
 			{
 				while(!this.IsDisposed)
 				{
@@ -132,18 +132,18 @@ namespace DMX_MIDI
 
 			spots = new GUISpot[2];
 			spots[0] = new GUISpot(
-				new Spot(1, 0, new int[] { 0, 1, 2 }, LeftOrRight.Left),
+				new Spot(1, 0, [0, 1, 2], LeftOrRight.Left),
 				light1
 			);
 			Thread.Sleep(1);
 			spots[1] = new GUISpot(
-				new Spot(2, 6, new int[] { 0, 1, 2 }, LeftOrRight.Right),
+				new Spot(2, 6, [0, 1, 2], LeftOrRight.Right),
 				light2
 			);
 			dmxManager.devices.Add(spots[0].spot);
 			dmxManager.devices.Add(spots[1].spot);
 			
-			Thread getLightColors = new Thread(t =>
+			Thread getLightColors = new(t =>
 			{
 				while (!this.IsDisposed)
 				{
@@ -223,11 +223,13 @@ namespace DMX_MIDI
             tapper.TapEvent += Tapper_TapEvent;
             tapper.BPMChanged += Tapper_BPMChanged;
 
+			/*
 			midiScript = new MoxScript();
 			midiScript.ShutdownAtEnd = 1;
 			midiScript.FireMidiInput = 1;
 			midiScript.MidiInput += MidiScript_MidiInput;
             midiScript.SysExInput += MidiScript_SysExInput;
+			*/
 
             // Load default midi device and serial port
 
@@ -245,7 +247,10 @@ namespace DMX_MIDI
 
             // Chargement des ports série
             string[] ports = SerialPort.GetPortNames();
-            Settings.Set(Settings.SettingsList.dmxPort, ports[0]);
+			if(ports.Length == 0)
+                Logger.AddLog("Form_Main.cs - Form_Main_Load:E: No serial port found.");
+			else
+	            Settings.Set(Settings.SettingsList.dmxPort, ports[0]);
         }
 
         private void Tapper_BPMChanged(object sender, Tapper.BPMChangedEventArgs e)
@@ -672,8 +677,11 @@ namespace DMX_MIDI
 
 		private void Form_Main_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			midiScript.FireMidiInput = 0;
-			midiScript = null;
+			if(midiScript != null)
+			{
+				midiScript.FireMidiInput = 0;
+				midiScript = null;
+			}
 			if(beatDetector != null)
 			{
 				beatDetector.StopAnalysis();
@@ -970,7 +978,13 @@ namespace DMX_MIDI
 			}
 		}
 
-		private void Slider_Freq_Filter_MouseUp(object sender, MouseEventArgs e)
+        private void Btn_ManualDMX_Click(object sender, EventArgs e)
+        {
+			Form_ManualDMX form_ManualDMX = new(dmxManager);
+			form_ManualDMX.Show();
+        }
+
+        private void Slider_Freq_Filter_MouseUp(object sender, MouseEventArgs e)
 		{
 			FreqSliderIsMoving = false;
 		}

@@ -11,11 +11,11 @@ namespace DMX_MIDI
 {
     internal class Tapper
     {
+        // Events
         public class TapEventArgs(int division) : EventArgs
         {
             public int BeatDivision = division; // 1-8
         }
-        // Events
         public event EventHandler<TapEventArgs> TapEvent; // Called 8 times per beat, new beat on e.BeatDivision == 1
         protected virtual void OnTap(TapEventArgs e)
         {

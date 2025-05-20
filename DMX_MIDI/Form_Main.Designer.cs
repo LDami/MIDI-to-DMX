@@ -61,6 +61,7 @@
             this.Button_InstantToExcel = new System.Windows.Forms.Button();
             this.Label_PeakLevel = new System.Windows.Forms.Label();
             this.Label_AverageLevel = new System.Windows.Forms.Label();
+            this.Btn_ManualDMX = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.light2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.light1)).BeginInit();
             this.containerLight1.SuspendLayout();
@@ -442,12 +443,23 @@
             this.Label_AverageLevel.TabIndex = 33;
             this.Label_AverageLevel.Text = "Average:";
             // 
+            // Btn_ManualDMX
+            // 
+            this.Btn_ManualDMX.Location = new System.Drawing.Point(861, 2);
+            this.Btn_ManualDMX.Name = "Btn_ManualDMX";
+            this.Btn_ManualDMX.Size = new System.Drawing.Size(104, 23);
+            this.Btn_ManualDMX.TabIndex = 34;
+            this.Btn_ManualDMX.Text = "Manual DMX";
+            this.Btn_ManualDMX.UseVisualStyleBackColor = true;
+            this.Btn_ManualDMX.Click += new System.EventHandler(this.Btn_ManualDMX_Click);
+            // 
             // Form_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.MidnightBlue;
             this.ClientSize = new System.Drawing.Size(1128, 558);
+            this.Controls.Add(this.Btn_ManualDMX);
             this.Controls.Add(this.Label_AverageLevel);
             this.Controls.Add(this.Label_PeakLevel);
             this.Controls.Add(this.Button_InstantToExcel);
@@ -527,6 +539,7 @@
 		private System.Windows.Forms.Button Button_InstantToExcel;
         private System.Windows.Forms.Label Label_PeakLevel;
         private System.Windows.Forms.Label Label_AverageLevel;
+        private System.Windows.Forms.Button Btn_ManualDMX;
     }
 }
 

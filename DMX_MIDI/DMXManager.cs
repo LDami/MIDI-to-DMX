@@ -18,6 +18,9 @@ namespace DMX_MIDI
 		public List<DMXDevice> devices;
 		private bool isBlinkOn; // Indicates if the light is ON on flashing
 
+		public byte[] manualChannels;
+		private bool isManualModeEnabled = false;
+
 		private Thread HandshakeThread;
 		private Action HandshakeFunc;
 		public void Init()
@@ -48,9 +51,10 @@ namespace DMX_MIDI
 				}
 
 				if (sp.IsOpen)
-				{
-					channels = new byte[512];
-					ContinuousSend();
+                {
+                    channels = new byte[512];
+                    manualChannels = new byte[512];
+                    ContinuousSend();
 				}
 				Logger.AddLog("DMXManager.cs - Init:I: HandshakeThread finished");
 			};
@@ -97,12 +101,12 @@ namespace DMX_MIDI
 			averageSpeed = 0;
 			nbrOfCall = 0;
 			lastCalcul = DateTime.Now;
-			Thread t = new Thread(delegate()
+			Thread t = new(delegate()
 			{
 				Logger.AddLog("DMXManager.cs - ContinuousSend:I: Continuous Send thread started");
 				try
 				{
-					byte[] zero = new byte[] { 0x00 };
+					byte[] zero = [0x00];
 					while (sp.IsOpen)
 					{
 						isBlinkOn = !isBlinkOn;
@@ -139,7 +143,11 @@ namespace DMX_MIDI
 						for (int i = 0; i < 12; i++)
 							Console.WriteLine($"channels[{i}] = {channels[i]}");
 						*/
-						sp.Write(channels, 0, channels.Length);
+						if(isManualModeEnabled)
+							sp.Write(manualChannels, 0, manualChannels.Length);
+						else
+							sp.Write(channels, 0, channels.Length);
+
 						sp.DiscardOutBuffer();
 						Thread.Sleep(9);
 						nbrOfCall++;
@@ -160,5 +168,11 @@ namespace DMX_MIDI
 			t.Priority = ThreadPriority.Highest;
 			t.Start();
 		}
+
+		public void SetManualMode(bool mode)
+		{
+			isManualModeEnabled = mode;
+
+        }
 	}
 }
